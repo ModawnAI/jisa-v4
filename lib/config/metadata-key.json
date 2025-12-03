@@ -1,0 +1,139 @@
+{
+  "content_types": [
+    "KRS 교육자료, 입문과정, 시스템 가이드, 시간표",
+    "insurance_commission_table",
+    "제휴사 상품교육, 시책안내, 위촉절차, 코드발급"
+  ],
+  "chunk_types": [
+    "page_full",
+    "table_row_summary",
+    "table_column_summary",
+    "table_full",
+    "event_range",
+    "heading_with_context",
+    "text_sentence_group",
+    "day_summary",
+    "event_individual",
+    "table_cell_commission"
+  ],
+  "primary_categories": [
+    "insurance_procedures",
+    "zoom_meeting",
+    "제휴사 교육",
+    "시험",
+    "일반 교육",
+    "KBLP 본사 강의",
+    "link",
+    "resource_links",
+    "note",
+    "강사 ZOOM접속 강의 (or 본부별 자체 실시)"
+  ],
+  "sub_categories": [
+    "promotion"
+  ],
+  "companies": [
+    "미래에셋",
+    "DB손보",
+    "IM라이프",
+    "교보생명",
+    "한화생명",
+    "삼성생명",
+    "KB라이프",
+    "삼성화재"
+  ],
+  "products_examples": [
+    "(일반/간편) 레이디H보장보험",
+    "(일반/간편) 케어백간병플러스",
+    "24~말일",
+    "(일반/간편)상속H종신보험",
+    "상기外 종신 상품",
+    "(일반/간편) 제로백H종신보험",
+    "(일반/간편) H간병보험",
+    "SAT",
+    "(일반/간편) H건강보험 (Basic)",
+    "(일반/간편) Need AI 암보험"
+  ],
+  "product_names_examples": [
+    "(일반/간편) 레이디H보장보험",
+    "(일반/간편) 케어백간병플러스",
+    "24~말일",
+    "(일반/간편)상속H종신보험",
+    "상기外 종신 상품",
+    "(일반/간편) 제로백H종신보험",
+    "(일반/간편) H간병보험",
+    "SAT",
+    "(일반/간편) H건강보험 (Basic)",
+    "(일반/간편) Need AI 암보험"
+  ],
+  "presenters_examples": [
+    "이태웅 지점장 (아너스)",
+    "장윤환 지점장 (사람인)",
+    "양윤선 지점장 (호선)",
+    "우병길 지점장 (CHARIN)",
+    "김소은 지점장 (서울)",
+    "류다희 교육프로 (삼성화재)",
+    "윤현식 이사",
+    "김명일 지점장 (MIRACLE)"
+  ],
+  "locations": [
+    "KB스타홀",
+    "엠타워",
+    "엠타워 5층"
+  ],
+  "date_examples": [
+    "2025-11-11",
+    "2025-11-17",
+    "2025-11-04",
+    "2025-11-10",
+    "2025-11-06",
+    "2025-11-21",
+    "2025-11-07",
+    "2025-11-20"
+  ],
+  "month_examples": [
+    "2025-11"
+  ],
+  "boolean_filters": [
+    "is_training",
+    "is_exam",
+    "is_promotion",
+    "is_policy",
+    "is_comprehensive",
+    "is_current_month",
+    "is_13th_month",
+    "is_fc_policy",
+    "is_hq_policy",
+    "is_appointment",
+    "is_deadline",
+    "is_ceremony",
+    "is_orientation",
+    "is_partner_education",
+    "is_kblp",
+    "is_zoom",
+    "is_conference"
+  ],
+  "payment_terms": [
+    "",
+    "50만",
+    "5,10,15년납",
+    "SUN",
+    "10년납",
+    "20년납미만",
+    "납기무관",
+    "5, 7년납",
+    "100%",
+    "90%",
+    "7년납",
+    "100만"
+  ],
+  "commission_categories": [
+    "종합",
+    "1차시책(FC시책)",
+    "2차시책(본부시책)"
+  ],
+  "commission_periods": [
+    "익월",
+    "13차월"
+  ],
+  "_note": "Optimized metadata - contains only examples. Semantic search handles the rest."
+}

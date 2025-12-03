@@ -1,0 +1,24 @@
+{
+  "schedule_pdfs": [
+    {
+      "name": "24년 호앤에프지사 일정표 - 25년 11월.pdf",
+      "url": "https://xsctqzbwa1mbabgs.public.blob.vercel-storage.com/pdfs/24-25-11.pdf",
+      "description": "2025년 11월 HO&F지사 전체 일정표",
+      "keywords": ["일정", "스케줄", "교육", "시험", "강의", "행사", "11월"]
+    },
+    {
+      "name": "HO&F지사 KRS 시간표 - 25011일반직.pdf",
+      "url": "https://xsctqzbwa1mbabgs.public.blob.vercel-storage.com/pdfs/hof-krs-25011.pdf",
+      "description": "KRS 16기 입문과정 상세 시간표",
+      "keywords": ["KRS", "입문과정", "시간표", "교육", "오리엔테이션"]
+    }
+  ],
+  "policy_pdfs": [
+    {
+      "name": "11월시책공지_한화생명추가만 (25.10.06.)_Ho&F.pdf",
+      "url": "https://xsctqzbwa1mbabgs.public.blob.vercel-storage.com/pdfs/11-251006-hof.pdf",
+      "description": "한화생명 11월 시책 공지 (수수료율표 포함)",
+      "keywords": ["한화생명", "시책", "수수료", "커미션", "익월", "13차월", "보험"]
+    }
+  ]
+}

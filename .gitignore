@@ -39,3 +39,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# data files
+*.pdf
+*.xlsx
+*.xls
+
+# MCP configuration (contains API keys)
+.mcp.json
+
+# Playwright
+playwright-report/
+test-results/
+
+# Local development
+rag
+claudedocs/

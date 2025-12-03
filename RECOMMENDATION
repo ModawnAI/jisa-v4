@@ -1,0 +1,243 @@
+---
+  ContractorHub (계약자허브) - Feature Analysis & Recommendations
+
+  Executive Summary
+
+  Based on thorough analysis of the codebase, this is a ~75% complete contractor management system with strong foundations in document processing and RAG
+  chat, but missing critical end-user facing features - particularly the KakaoTalk integration which is the stated primary interface.
+
+  ---
+  Current State Assessment
+
+  ✅ Well-Implemented Features
+
+  | Feature                      | Completeness | Notes                                                                       |
+  |------------------------------|--------------|-----------------------------------------------------------------------------|
+  | Document Processing Pipeline | 95%          | 3 specialized processors (MDRT, Compensation, PDF), Inngest background jobs |
+  | RAG Chat System              | 90%          | Streaming responses, Gemini 2.0, multi-namespace search, context panel      |
+  | Employee Management          | 90%          | CRUD, hierarchy, clearance levels, manager relationships                    |
+  | Template System              | 85%          | Column mappings, versions, processor selection                              |
+  | Vector DB Integration        | 85%          | Dual namespace (org_/emp_), clearance-based filtering                       |
+  | Conflict Detection           | 80%          | Detection, resolution workflow, statistics                                  |
+  | Data Lineage                 | 80%          | Document→chunk→vector provenance tracking                                   |
+
+  ⚠️ Incomplete/Missing Features
+
+  | Feature              | Status                | Impact                         |
+  |----------------------|-----------------------|--------------------------------|
+  | KakaoTalk Webhook    | 0% - Not implemented  | CRITICAL - Core stated purpose |
+  | Analytics Charts     | 30% - Placeholder     | Dashboard feels incomplete     |
+  | Settings Persistence | 20% - UI only         | Settings don't save            |
+  | Audit Logging        | 10% - Mock data       | No real tracking               |
+  | Notifications        | 10% - UI toggles only | No actual notifications        |
+  | User Management      | 20% - Mock data       | Can't add/edit users           |
+
+  ---
+  Feature Recommendations by Priority
+
+  🔴 Phase 1: Critical Path (Week 1-2)
+
+  1. KakaoTalk Chatbot Webhook Handler
+
+  Why: This is the stated primary interface. Contractors will interact via KakaoTalk, not the admin UI.
+
+  app/api/kakao/
+  ├── webhook/route.ts         # Message handler
+  ├── verify/route.ts          # Webhook verification
+  └── callback/route.ts        # Auth callback
+
+  Features needed:
+  - Webhook message parsing (text, button, quick reply)
+  - User identification via kakaoId → employee mapping
+  - Intent classification (compensation query, document request, onboarding)
+  - Response formatting for KakaoTalk message types
+  - Session management for multi-turn conversations
+  - Rate limiting and error handling
+
+  2. Contractor Self-Service Portal
+
+  Why: Contractors need to access their own information without admin intervention.
+
+  app/(contractor)/
+  ├── login/page.tsx           # KakaoTalk OAuth login
+  ├── dashboard/page.tsx       # Personal dashboard
+  ├── compensation/page.tsx    # View earnings
+  ├── documents/page.tsx       # View assigned docs
+  ├── chat/page.tsx           # Ask questions about their data
+  └── onboarding/page.tsx      # Complete onboarding tasks
+
+  3. Compensation Calculator Service
+
+  Why: Core business logic for the stated purpose "contractor compensation calculation."
+
+  // lib/services/compensation.service.ts
+  - calculateMDRTProgress(employeeId)     // MDRT milestone tracking
+  - calculateCommission(employeeId, period)
+  - getCompensationSummary(employeeId)
+  - compareToTarget(employeeId, targetType)
+  - forecastEarnings(employeeId, months)
+
+  ---
+  🟡 Phase 2: Essential Enhancements (Week 3-4)
+
+  4. Onboarding Workflow Engine
+
+  Why: "Onboarding system" is explicitly stated in the app description.
+
+  Features:
+  - Configurable onboarding checklists per department/role
+  - Document submission requirements
+  - Progress tracking and reminders
+  - Manager approval workflow
+  - Automated KakaoTalk notifications
+
+  Tables needed:
+  onboarding_templates (id, name, steps, department_filter)
+  onboarding_progress (id, employee_id, template_id, current_step, started_at, completed_at)
+  onboarding_submissions (id, progress_id, step_id, document_id, status)
+
+  5. Real-time Analytics Dashboard
+
+  Why: Replace placeholders with actual visualizations.
+
+  Implementations:
+  - Recharts/Tremor for chart components
+  - Real-time document processing metrics
+  - Employee activity heatmaps
+  - Compensation trend analysis
+  - MDRT achievement tracking
+
+  6. Notification System
+
+  Why: System needs to proactively communicate with users.
+
+  Channels:
+  - KakaoTalk push (via Alim Talk API)
+  - In-app notifications
+  - Email (optional)
+
+  Triggers:
+  - Document processed successfully/failed
+  - Onboarding step required
+  - Compensation statement available
+  - Conflict needs resolution
+  - MDRT milestone achieved
+
+  ---
+  🟢 Phase 3: Value-Add Features (Week 5-6)
+
+  7. Bulk Operations & Batch Processing
+
+  Why: Admin efficiency for managing many contractors.
+
+  - Bulk employee import from Excel
+  - Mass document assignment
+  - Batch clearance level updates
+  - Department-wide notifications
+
+  8. Advanced RAG Features
+
+  Why: Improve chat accuracy and usefulness.
+
+  - Conversation memory: Store and retrieve past sessions
+  - Follow-up suggestions: Prompt relevant next questions
+  - Citation linking: Click to view source document
+  - Feedback loop: Thumbs up/down to improve retrieval
+  - Multi-modal support: Image/PDF preview in chat
+
+  9. Reporting & Export
+
+  Why: Business intelligence and compliance.
+
+  - Compensation reports by period/department
+  - MDRT achievement summaries
+  - Document processing statistics
+  - Audit trail exports
+  - Scheduled report generation
+
+  10. Multi-Organization Support
+
+  Why: Scale the platform for multiple companies.
+
+  Current: Single-tenant with org_ namespace
+  Needed: Full organization isolation, billing, white-labeling
+
+  ---
+  🔵 Phase 4: Advanced Capabilities (Future)
+
+  11. AI-Powered Insights
+
+  - Anomaly detection in compensation data
+  - Churn prediction for contractors
+  - Performance benchmarking
+  - Natural language report generation
+
+  12. Integration Ecosystem
+
+  - HR system connectors (Workday, SAP)
+  - Accounting system sync
+  - E-signature integration (DocuSign)
+  - Calendar integration for onboarding
+
+  13. Mobile App
+
+  - React Native wrapper
+  - Push notification support
+  - Offline document viewing
+  - Biometric authentication
+
+  ---
+  Architecture Recommendations
+
+  1. Event-Driven Architecture Enhancement
+
+  Current: Inngest for doc processing only
+  Recommended: Expand to all async operations
+
+  Events to add:
+  - employee.created → trigger onboarding
+  - document.processed → notify employee
+  - compensation.calculated → send statement
+  - mdrt.milestone → celebrate achievement
+
+  2. Real-time Layer
+
+  Options:
+  1. Supabase Realtime (already in stack)
+  2. Server-Sent Events for dashboard
+  3. WebSocket for chat enhancements
+
+  3. Caching Strategy
+
+  - Redis for session management
+  - Vercel Edge caching for static content
+  - React Query for client-side
+
+  ---
+  Quick Wins (Can implement today)
+
+  1. Wire up existing analytics APIs to charts - Data exists, just needs visualization
+  2. Persist settings to Supabase - Add settings table, connect to existing UI
+  3. Real audit log from documents table - Replace mock data with actual DB queries
+  4. Employee chat history API - Endpoint exists but may not be connected
+
+  ---
+  Risk Assessment
+
+  | Risk                         | Mitigation                                            |
+  |------------------------------|-------------------------------------------------------|
+  | KakaoTalk API complexity     | Start with basic text, add rich cards later           |
+  | Compensation accuracy        | Extensive testing, version control on formulas        |
+  | Data privacy (employee info) | Row-level security, audit logs, clearance enforcement |
+  | Scale (many contractors)     | Pinecone handles vector scale; optimize DB queries    |
+
+  ---
+  Recommended Next Steps
+
+  1. Immediate: Implement KakaoTalk webhook handler (blocks end-user usage)
+  2. This week: Add compensation calculator service
+  3. This month: Build contractor self-service portal
+  4. Ongoing: Implement notification system with KakaoTalk Alim Talk
+
+  The application has excellent foundations - the document processing, RAG, and admin CRUD are solid. The gap is in end-user facing features that deliver
+  value to contractors themselves, not just administrators.
