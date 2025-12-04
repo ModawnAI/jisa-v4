@@ -1,5 +1,34 @@
 # JISA KakaoTalk Backend
 
+> **LEGACY - DO NOT DEPLOY**
+>
+> This Express.js backend has been **fully migrated to Next.js API routes**.
+> The backend folder is kept for historical reference only.
+>
+> **Active implementation**: `/app/api/kakao/chat/route.ts`
+>
+> See [DEPLOYMENT.md](../DEPLOYMENT.md) for the single-service Vercel deployment guide.
+
+---
+
+## Migration Map
+
+| Original (Express) | Migrated To (Next.js) |
+|--------------------|----------------------|
+| `src/routes/kakao.route.ts` | `app/api/kakao/chat/route.ts` |
+| `src/services/chat.service.ts` | `lib/services/kakao/chat.service.ts` |
+| `src/services/rag.service.ts` | `lib/services/kakao/rag.service.ts` |
+| `src/services/employee-rag.service.ts` | `lib/services/kakao/employee-rag.service.ts` |
+| `src/services/rbac.service.ts` | `lib/services/kakao/rbac.service.ts` |
+| `src/services/commission-detector.service.ts` | `lib/services/kakao/commission-detector.service.ts` |
+| `src/config/metadata_key.json` | `lib/config/metadata-key.json` |
+| `src/config/pdf_urls.json` | `lib/config/pdf-urls.json` |
+| `src/types/index.ts` | `lib/types/kakao.ts` |
+
+---
+
+## Original Documentation (for reference)
+
 A standalone Express.js backend for handling KakaoTalk webhook communication for the JISA Insurance HR/Information System.
 
 ## Overview
