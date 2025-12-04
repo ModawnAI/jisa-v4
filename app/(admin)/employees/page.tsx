@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { PageHeader } from '@/components/admin/page-header';
 import { EmployeeTable } from './_components/employee-table';
 import { EmployeeFilters } from './_components/employee-filters';
+import { BulkImportDialog } from './_components/bulk-import-dialog';
 import { Button } from '@/components/ui/button';
 import { Plus } from '@phosphor-icons/react/dist/ssr';
 import Link from 'next/link';
@@ -28,12 +29,15 @@ export default async function EmployeesPage({ searchParams }: PageProps) {
         title="직원 관리"
         description="조직의 직원을 관리하고 RAG 시스템 접근 권한을 설정합니다."
       >
-        <Button asChild>
-          <Link href="/employees/new">
-            <Plus className="mr-2 h-4 w-4" />
-            직원 추가
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <BulkImportDialog />
+          <Button asChild>
+            <Link href="/employees/new">
+              <Plus className="mr-2 h-4 w-4" />
+              직원 추가
+            </Link>
+          </Button>
+        </div>
       </PageHeader>
 
       <div className="space-y-4">
