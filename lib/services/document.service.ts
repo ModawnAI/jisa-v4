@@ -63,7 +63,7 @@ export class DocumentService {
     const [document] = await db
       .insert(documents)
       .values({
-        fileName: uploadResult.path.split('/').pop()!,
+        fileName: input.file.name,
         fileUrl: uploadResult.url,
         filePath: uploadResult.path,
         fileType,

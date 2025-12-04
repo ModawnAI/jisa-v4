@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { documentService } from '@/lib/services/document.service';
+import { inngest } from '@/lib/inngest/client';
 import { withErrorHandler } from '@/lib/errors/handler';
 import { z } from 'zod';
 
@@ -100,6 +101,12 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     employeeId: employeeId || undefined,
     uploadedBy: user.id,
     metadata,
+  });
+
+  // Trigger document processing via Inngest
+  await inngest.send({
+    name: 'document/process',
+    data: { documentId: document.id },
   });
 
   return NextResponse.json({
