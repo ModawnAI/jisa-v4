@@ -149,6 +149,7 @@ export function UploadForm({ categories, templates }: UploadFormProps) {
   const uploadFile = async (fileWithProgress: FileWithProgress, formData: UploadFormData) => {
     const data = new FormData();
     data.append('file', fileWithProgress.file);  // Use the original File object
+    data.append('fileName', fileWithProgress.file.name);  // Send filename separately to preserve it
 
     if (formData.categoryId && formData.categoryId !== 'none') {
       data.append('categoryId', formData.categoryId);

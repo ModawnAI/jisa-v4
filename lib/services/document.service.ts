@@ -9,6 +9,7 @@ export type DocumentStatus = 'pending' | 'processing' | 'completed' | 'failed' |
 
 export interface CreateDocumentInput {
   file: File;
+  fileName?: string; // Optional: preserved filename from client
   categoryId?: string;
   documentTypeId?: string;
   templateId?: string;
@@ -56,14 +57,17 @@ export class DocumentService {
       { folder: 'documents' }
     );
 
+    // Use preserved filename from client, fallback to file.name
+    const actualFileName = input.fileName || input.file.name;
+
     // Determine file type from extension
-    const fileType = this.getFileTypeFromName(input.file.name);
+    const fileType = this.getFileTypeFromName(actualFileName);
 
     // Create document record
     const [document] = await db
       .insert(documents)
       .values({
-        fileName: input.file.name,
+        fileName: actualFileName,
         fileUrl: uploadResult.url,
         filePath: uploadResult.path,
         fileType,

@@ -67,6 +67,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
   const formData = await request.formData();
   const file = formData.get('file') as File;
+  // Get filename from separate field (preserves Korean characters and special chars)
+  const fileName = (formData.get('fileName') as string) || file?.name;
 
   if (!file) {
     return NextResponse.json(
@@ -94,6 +96,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
   const document = await documentService.create({
     file,
+    fileName, // Pass the preserved filename
     categoryId: categoryId || undefined,
     documentTypeId: documentTypeId || undefined,
     templateId: templateId || undefined,
