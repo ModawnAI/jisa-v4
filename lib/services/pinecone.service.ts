@@ -296,6 +296,49 @@ export class PineconeService {
   }
 
   /**
+   * Query sample vectors from a namespace using random vector
+   * Returns vectors with metadata for schema discovery
+   */
+  async querySample(namespace: string, count: number): Promise<SearchResult[]> {
+    try {
+      const index = getPineconeIndex();
+      const ns = index.namespace(namespace);
+
+      // Generate a random unit vector for sampling
+      const dimension = EMBEDDING_CONFIG.dimensions;
+      const randomVector = Array.from({ length: dimension }, () =>
+        (Math.random() - 0.5) * 2
+      );
+
+      // Normalize the vector
+      const magnitude = Math.sqrt(
+        randomVector.reduce((sum, val) => sum + val * val, 0)
+      );
+      const normalizedVector = randomVector.map((val) => val / magnitude);
+
+      const response = await ns.query({
+        vector: normalizedVector,
+        topK: Math.min(count, 100),
+        includeMetadata: true,
+        includeValues: false,
+      });
+
+      return (response.matches || []).map((match) => ({
+        id: match.id,
+        score: match.score ?? 0,
+        metadata: match.metadata as VectorMetadata | undefined,
+      }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '알 수 없는 오류';
+      throw new AppError(
+        ERROR_CODES.PROCESSING_FAILED,
+        `샘플 벡터 조회에 실패했습니다: ${message}`,
+        500
+      );
+    }
+  }
+
+  /**
    * Search across multiple namespaces
    */
   async searchMultipleNamespaces(
@@ -366,6 +409,97 @@ export class PineconeService {
     }
 
     return filter;
+  }
+
+  /**
+   * List all namespaces in the index with their statistics
+   */
+  async listNamespaces(): Promise<{
+    namespaces: Array<{ name: string; recordCount: number }>;
+    totalRecords: number;
+    dimension: number;
+  }> {
+    try {
+      const index = getPineconeIndex();
+      const stats = await index.describeIndexStats();
+
+      const namespaces: Array<{ name: string; recordCount: number }> = [];
+      let totalRecords = 0;
+
+      if (stats.namespaces) {
+        for (const [name, nsStats] of Object.entries(stats.namespaces)) {
+          const recordCount = nsStats?.recordCount ?? 0;
+          namespaces.push({ name, recordCount });
+          totalRecords += recordCount;
+        }
+      }
+
+      return {
+        namespaces,
+        totalRecords,
+        dimension: stats.dimension ?? EMBEDDING_CONFIG.dimensions,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '알 수 없는 오류';
+      throw new AppError(
+        ERROR_CODES.PROCESSING_FAILED,
+        `네임스페이스 목록 조회에 실패했습니다: ${message}`,
+        500
+      );
+    }
+  }
+
+  /**
+   * Delete a single namespace by deleting all vectors in it
+   */
+  async deleteNamespace(namespace: string): Promise<void> {
+    try {
+      const index = getPineconeIndex();
+      const ns = index.namespace(namespace);
+
+      // Delete all vectors in the namespace
+      await ns.deleteAll();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '알 수 없는 오류';
+      throw new AppError(
+        ERROR_CODES.PROCESSING_FAILED,
+        `네임스페이스 삭제에 실패했습니다: ${message}`,
+        500
+      );
+    }
+  }
+
+  /**
+   * Clear all namespaces in the index
+   */
+  async clearAllNamespaces(): Promise<{
+    deletedNamespaces: string[];
+    errors: Array<{ namespace: string; error: string }>;
+  }> {
+    try {
+      const { namespaces } = await this.listNamespaces();
+      const deletedNamespaces: string[] = [];
+      const errors: Array<{ namespace: string; error: string }> = [];
+
+      for (const { name } of namespaces) {
+        try {
+          await this.deleteNamespace(name);
+          deletedNamespaces.push(name);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : '알 수 없는 오류';
+          errors.push({ namespace: name, error: message });
+        }
+      }
+
+      return { deletedNamespaces, errors };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '알 수 없는 오류';
+      throw new AppError(
+        ERROR_CODES.PROCESSING_FAILED,
+        `전체 네임스페이스 삭제에 실패했습니다: ${message}`,
+        500
+      );
+    }
   }
 }
 

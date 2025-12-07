@@ -238,6 +238,9 @@ export interface ProcessorResult {
   /** Named entities extracted from the document */
   entities?: ExtractedEntity[];
 
+  /** Detailed records extracted from the document */
+  detailedRecords?: DetailedRecords;
+
   /** Processing metadata */
   processingInfo: {
     processorType: string;
@@ -474,4 +477,85 @@ export function isMdrtMetadata(
     'metadataType' in metadata &&
     metadata.metadataType === 'mdrt'
   );
+}
+
+// =============================================================================
+// MDRT Processing Types
+// =============================================================================
+
+/**
+ * Monthly data for MDRT performance tracking
+ */
+export interface MdrtMonthlyData {
+  month: string;                    // e.g., '2025-01'
+  paymentMonth: string;             // e.g., '1월 보수'
+  performanceMonth: string;         // e.g., '24.12월 실적'
+  commissionTotal: number;          // A.커미션 합계
+  commissionProtection: number;     // A.커미션 보장성금액
+  incomeTotal: number;              // B.총수입 합계
+  incomeNewContract: number;        // B1.신계약수입
+  incomeProtection: number;         // B2.보장성금액
+}
+
+/**
+ * MDRT qualification thresholds
+ */
+export interface MdrtThresholds {
+  fyc: {
+    onPace: number;
+    mdrt: number;
+    cot: number;
+    tot: number;
+  };
+  agi: {
+    onPace: number;
+    mdrt: number;
+    cot: number;
+    tot: number;
+  };
+}
+
+/**
+ * Performance record for tracking employee metrics
+ */
+export interface PerformanceRecord {
+  employeeId: string;
+  employeeName?: string;
+  period: string;
+  performanceType?: string;
+  metricName?: string;
+  metricValue?: number;
+  targetValue?: number;
+  achievementRate?: number;
+  metrics?: Record<string, unknown>;
+  rawData?: Record<string, unknown>;
+  sourceInfo?: {
+    documentId: string;
+    rowIndex: number;
+  };
+}
+
+/**
+ * Detailed records extracted from documents
+ */
+export interface DetailedRecords {
+  commissions: unknown[];
+  overrides: unknown[];
+  incentives: unknown[];
+  clawbacks: unknown[];
+  performance: PerformanceRecord[];
+  allowances: unknown[];
+}
+
+/**
+ * Result of structure detection for document processors
+ */
+export interface StructureDetectionResult {
+  matches: boolean;
+  confidence: number;
+  reason: string;
+  detectedMarkers?: string[];
+  detectedSheets?: string[];
+  markers?: string[];
+  suggestedProcessor?: string;
 }

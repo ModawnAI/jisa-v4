@@ -8,6 +8,7 @@
 import { genericPdfProcessor } from './generic-pdf-processor';
 import { compensationExcelProcessor } from './compensation-excel-processor';
 import { mdrtExcelProcessor } from './mdrt-excel-processor';
+import { mdrtComprehensiveProcessor } from './mdrt-comprehensive-processor';
 import type {
   DocumentProcessor,
   DocumentForProcessing,
@@ -320,6 +321,7 @@ export {
 export { GenericPdfProcessor } from './generic-pdf-processor';
 export { CompensationExcelProcessor } from './compensation-excel-processor';
 export { MdrtExcelProcessor } from './mdrt-excel-processor';
+export { MdrtComprehensiveProcessor } from './mdrt-comprehensive-processor';
 
 // Re-export singleton instances
-export { genericPdfProcessor, compensationExcelProcessor, mdrtExcelProcessor };
+export { genericPdfProcessor, compensationExcelProcessor, mdrtExcelProcessor, mdrtComprehensiveProcessor };

@@ -18,3 +18,10 @@ export * from './query-logs';
 
 // Prompt Management
 export * from './prompt-templates';
+
+// RAG System
+export * from './rag-schema';
+export * from './rag-metrics';
+export * from './autonomous-rag';
+export * from './chat-settings';
+export * from './detailed-records';
