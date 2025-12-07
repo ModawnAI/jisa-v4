@@ -10,6 +10,9 @@ const publicRoutes = [
   '/reset-password',
   '/auth/callback',
   '/api/auth',
+  '/terms',
+  '/privacy',
+  '/legal',
 ];
 
 // API routes that don't require authentication

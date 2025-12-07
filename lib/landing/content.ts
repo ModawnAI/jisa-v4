@@ -11,7 +11,6 @@ export const heroContent = {
     { value: '24/7', label: 'AI 응답' },
   ],
   primaryCta: '무료로 시작하기',
-  secondaryCta: '데모 영상 보기',
 };
 
 export const socialProofContent = {
@@ -299,27 +298,6 @@ export const faqContent = {
   ],
 };
 
-export const poweredByContent = {
-  title: 'Powered By',
-  subtitle: '최신 AI 기술로 구동됩니다',
-  techs: [
-    {
-      name: 'OpenAI',
-      description: '텍스트 임베딩',
-      logo: 'openai',
-    },
-    {
-      name: 'Google Gemini',
-      description: 'AI 답변 생성',
-      logo: 'gemini',
-    },
-    {
-      name: 'Pinecone',
-      description: '벡터 검색',
-      logo: 'pinecone',
-    },
-  ],
-};
 
 export const ctaContent = {
   title: '반복 문의, 오늘부터 90% 줄이세요',
@@ -351,6 +329,7 @@ export const footerContent = {
     legal: [
       { label: '이용약관', href: '/terms' },
       { label: '개인정보처리방침', href: '/privacy' },
+      { label: '법적 고지', href: '/legal' },
     ],
   },
   copyright: '© 2025 모드온 AI. All rights reserved.',

@@ -8,6 +8,7 @@ import {
   ChatCircle,
 } from '@phosphor-icons/react';
 import { howItWorksContent } from '@/lib/landing/content';
+import { KakaoChatMockup, ChatMessage } from './kakao-chat-mockup';
 
 const iconMap = {
   Upload,
@@ -15,6 +16,47 @@ const iconMap = {
   Key,
   ChatCircle,
 };
+
+const demoMessages: ChatMessage[] = [
+  {
+    type: 'user',
+    content: '안녕하세요, 처음 사용해요',
+    time: '오후 1:00',
+    read: true,
+  },
+  {
+    type: 'ai',
+    content: (
+      <div className="space-y-2">
+        <p>안녕하세요! 모드온 AI입니다.</p>
+        <p>인증코드를 입력해주시면 개인 맞춤 서비스를 시작할 수 있어요.</p>
+        <p className="text-xs text-gray-500">예: J00307</p>
+      </div>
+    ),
+    time: '오후 1:00',
+  },
+  {
+    type: 'user',
+    content: 'J00307',
+    time: '오후 1:00',
+    read: true,
+  },
+  {
+    type: 'ai',
+    content: (
+      <div className="space-y-2">
+        <p>김민수님, 인증되었습니다! 🎉</p>
+        <p>이제 무엇이든 물어보세요:</p>
+        <div className="space-y-0.5 text-gray-600 text-xs">
+          <p>• &quot;이번 달 정산 얼마야?&quot;</p>
+          <p>• &quot;수수료율 알려줘&quot;</p>
+          <p>• &quot;복지포인트 잔액은?&quot;</p>
+        </div>
+      </div>
+    ),
+    time: '오후 1:00',
+  },
+];
 
 export function HowItWorksSection() {
   return (
@@ -122,6 +164,26 @@ export function HowItWorksSection() {
             })}
           </div>
         </div>
+
+        {/* Demo Chat - Result Preview */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          viewport={{ once: true }}
+          className="mt-16"
+        >
+          <div className="mb-6 text-center">
+            <p className="text-sm font-medium text-primary">
+              ✨ 결과: 직원이 첫 대화를 시작하면
+            </p>
+          </div>
+          <KakaoChatMockup
+            messages={demoMessages}
+            className="mx-auto max-w-md shadow-xl"
+            compact
+          />
+        </motion.div>
       </div>
     </section>
   );

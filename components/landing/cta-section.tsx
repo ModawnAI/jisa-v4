@@ -4,14 +4,13 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight, Envelope, Sparkle } from '@phosphor-icons/react';
 import { Spotlight } from '@/components/aceternity/spotlight';
-import { MovingBorder } from '@/components/aceternity/moving-border';
 import { ctaContent } from '@/lib/landing/content';
 
 export function CtaSection() {
   return (
     <section
       id="cta"
-      className="relative overflow-hidden bg-card py-24"
+      className="relative overflow-x-clip bg-card py-24"
     >
       <Spotlight
         className="-top-40 left-0 md:-top-20 md:left-60"
@@ -40,21 +39,24 @@ export function CtaSection() {
           </p>
 
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link href="/signup">
-              <MovingBorder
-                borderRadius="0.75rem"
-                className="bg-primary px-8 py-4 font-semibold text-primary-foreground"
-              >
-                <span className="flex items-center gap-2">
-                  {ctaContent.primaryCta}
-                  <ArrowRight size={18} weight="bold" />
-                </span>
-              </MovingBorder>
+            <Link
+              href="/signup"
+              className="group relative inline-flex h-14 items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                {ctaContent.primaryCta}
+                <ArrowRight
+                  size={18}
+                  weight="bold"
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </span>
+              <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             </Link>
 
             <a
-              href="mailto:sales@contractorhub.kr"
-              className="flex items-center gap-2 rounded-xl border border-border bg-background px-6 py-4 font-medium text-foreground transition-colors hover:bg-accent"
+              href="mailto:info@modawn.ai"
+              className="flex h-14 items-center gap-2 rounded-full border border-border bg-background px-6 font-medium text-foreground transition-colors hover:bg-accent"
             >
               <Envelope size={18} />
               <span>{ctaContent.secondaryCta}</span>

@@ -2,11 +2,67 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, ChatCircle, PaperPlaneTilt } from '@phosphor-icons/react';
+import { ArrowRight, ChatCircle } from '@phosphor-icons/react';
 import { AuroraBackground } from '@/components/aceternity/aurora-background';
 import { Spotlight } from '@/components/aceternity/spotlight';
-import { Button } from '@/components/aceternity/moving-border';
 import { heroContent } from '@/lib/landing/content';
+import { KakaoChatMockup, ChatMessage } from './kakao-chat-mockup';
+
+const heroMessages: ChatMessage[] = [
+  {
+    type: 'user',
+    content: '이번 달 정산 얼마야?',
+    time: '오후 2:30',
+    read: true,
+  },
+  {
+    type: 'ai',
+    content: (
+      <div className="space-y-2">
+        <p>안녕하세요, 김민수님!</p>
+        <p className="font-medium">11월 정산 내역입니다:</p>
+        <div className="space-y-0.5 text-gray-700">
+          <p>• 기본수수료: 4,500,000원</p>
+          <p>• 성과급: 800,000원</p>
+          <p>• 공제액: -570,000원</p>
+        </div>
+        <p className="font-semibold text-primary">실수령액: 4,730,000원</p>
+        <p className="text-xs text-gray-500">25일 입금 예정</p>
+      </div>
+    ),
+    time: '오후 2:30',
+  },
+  {
+    type: 'user',
+    content: '지난달이랑 비교해줘',
+    time: '오후 2:31',
+    read: true,
+  },
+  {
+    type: 'ai',
+    content: (
+      <div className="space-y-2">
+        <p>10월 vs 11월 비교입니다.</p>
+        <div className="space-y-0.5 text-gray-700">
+          <p>
+            • 정산금:{' '}
+            <span className="text-green-600 font-medium">+530,000원</span>{' '}
+            <span className="text-green-600 text-xs">(+12.6%)</span>
+          </p>
+          <p>
+            • 계약건수:{' '}
+            <span className="text-green-600 font-medium">+3건</span>{' '}
+            <span className="text-green-600 text-xs">(+25%)</span>
+          </p>
+        </div>
+        <p className="text-xs text-primary font-medium">
+          모든 지표가 상승했어요! 훌륭합니다!
+        </p>
+      </div>
+    ),
+    time: '오후 2:31',
+  },
+];
 
 export function HeroSection() {
   return (
@@ -76,25 +132,21 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="mt-10 flex flex-col items-center gap-4 sm:flex-row"
+            className="mt-10"
           >
-            <Button
-              as={Link}
-              href="#cta"
-              borderRadius="1.75rem"
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              {heroContent.primaryCta}
-            </Button>
             <Link
-              href="#how-it-works"
-              className="group flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-foreground transition-colors hover:text-primary"
+              href="#cta"
+              className="group relative inline-flex h-14 items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"
             >
-              {heroContent.secondaryCta}
-              <ArrowRight
-                size={16}
-                className="transition-transform group-hover:translate-x-1"
-              />
+              <span className="relative z-10 flex items-center gap-2">
+                {heroContent.primaryCta}
+                <ArrowRight
+                  size={18}
+                  weight="bold"
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </span>
+              <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             </Link>
           </motion.div>
 
@@ -103,90 +155,12 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="relative mt-16 w-full max-w-2xl"
+            className="relative mt-16 w-full max-w-xl"
           >
-            <div className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
-              {/* KakaoTalk header */}
-              <div className="flex items-center gap-3 border-b border-border bg-[#FFE812] px-4 py-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#3C1E1E]">
-                  <span className="text-sm font-bold text-[#FFE812]">M</span>
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-[#3C1E1E]">모드온 AI</p>
-                  <p className="text-xs text-[#3C1E1E]/60">항상 응답 가능</p>
-                </div>
-              </div>
-
-              {/* Chat messages */}
-              <div className="space-y-4 bg-[#B2C7D9] p-4">
-                {/* User message */}
-                <div className="flex justify-end">
-                  <div className="max-w-[70%] rounded-2xl rounded-tr-sm bg-[#FFE812] px-4 py-2.5">
-                    <p className="text-sm text-[#3C1E1E]">이번 달 정산 얼마야?</p>
-                  </div>
-                </div>
-
-                {/* AI response */}
-                <div className="flex gap-2">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white">
-                    <span className="text-xs font-bold text-primary">AI</span>
-                  </div>
-                  <div className="max-w-[75%] rounded-2xl rounded-tl-sm bg-white px-4 py-2.5 shadow-sm">
-                    <p className="text-sm text-gray-800">
-                      안녕하세요, 김민수님! 👋
-                      <br /><br />
-                      이번 달 정산 내역입니다:
-                      <br />
-                      <span className="font-medium">• 기본수수료: 4,500,000원</span>
-                      <br />
-                      <span className="font-medium">• 성과급: 800,000원</span>
-                      <br />
-                      <span className="font-medium">• 공제액: -570,000원</span>
-                      <br /><br />
-                      <span className="font-semibold text-primary">실수령액: 4,730,000원</span>
-                      <br />
-                      <span className="text-xs text-gray-500">25일 입금 예정</span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* User follow-up */}
-                <div className="flex justify-end">
-                  <div className="max-w-[70%] rounded-2xl rounded-tr-sm bg-[#FFE812] px-4 py-2.5">
-                    <p className="text-sm text-[#3C1E1E]">이번 달 수수료율 얼마야?</p>
-                  </div>
-                </div>
-
-                {/* AI response 2 */}
-                <div className="flex gap-2">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white">
-                    <span className="text-xs font-bold text-primary">AI</span>
-                  </div>
-                  <div className="max-w-[75%] rounded-2xl rounded-tl-sm bg-white px-4 py-2.5 shadow-sm">
-                    <p className="text-sm text-gray-800">
-                      김민수님의 현재 수수료율:
-                      <br />
-                      <span className="font-medium">• 자동차보험: 12%</span>
-                      <br />
-                      <span className="font-medium">• 화재보험: 18%</span>
-                      <br />
-                      <span className="font-semibold text-primary">• 생명보험: 25%</span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Input field */}
-                <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2">
-                  <input
-                    type="text"
-                    placeholder="메시지를 입력하세요"
-                    className="flex-1 bg-transparent text-sm text-gray-600 outline-none placeholder:text-gray-400"
-                    disabled
-                  />
-                  <PaperPlaneTilt size={20} className="text-primary" weight="fill" />
-                </div>
-              </div>
-            </div>
+            <KakaoChatMockup
+              messages={heroMessages}
+              className="shadow-2xl"
+            />
 
             {/* Glow effect */}
             <div className="absolute -inset-x-20 -bottom-20 h-40 bg-gradient-to-t from-background via-background/80 to-transparent" />

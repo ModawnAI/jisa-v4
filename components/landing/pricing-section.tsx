@@ -1,9 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Check, ArrowRight, Sparkle } from '@phosphor-icons/react';
+import { Check, ArrowRight } from '@phosphor-icons/react';
 import Link from 'next/link';
-import { MovingBorder } from '@/components/aceternity/moving-border';
 import { pricingContent } from '@/lib/landing/content';
 
 export function PricingSection() {
@@ -30,7 +29,7 @@ export function PricingSection() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           viewport={{ once: true }}
-          className="relative overflow-hidden rounded-3xl border border-primary bg-card p-8 shadow-xl shadow-primary/10 md:p-12"
+          className="relative rounded-3xl border border-primary bg-card p-8 shadow-xl shadow-primary/10 md:p-12"
         >
           {/* Price */}
           <div className="mb-8 text-center">
@@ -69,22 +68,19 @@ export function PricingSection() {
 
           {/* CTA */}
           <div className="flex flex-col items-center gap-4 text-center">
-            <Link href="/signup">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <MovingBorder
-                  borderRadius="1rem"
-                  className="bg-gradient-to-r from-primary via-primary to-blue-600 px-12 py-5 text-lg font-bold text-primary-foreground shadow-xl shadow-primary/25"
-                >
-                  <span className="flex items-center gap-3">
-                    <Sparkle size={20} weight="fill" />
-                    {pricingContent.cta}
-                    <ArrowRight size={20} weight="bold" />
-                  </span>
-                </MovingBorder>
-              </motion.div>
+            <Link
+              href="/signup"
+              className="group relative inline-flex h-14 items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-10 text-lg font-bold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                {pricingContent.cta}
+                <ArrowRight
+                  size={20}
+                  weight="bold"
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </span>
+              <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             </Link>
             <p className="text-sm text-muted-foreground">
               3분 만에 설정 완료 · 신용카드 불필요

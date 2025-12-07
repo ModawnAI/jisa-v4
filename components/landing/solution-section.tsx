@@ -8,7 +8,6 @@ import {
   ShieldCheck,
   ArrowsClockwise,
 } from '@phosphor-icons/react';
-import { BentoGrid, BentoGridItem } from '@/components/aceternity/bento-grid';
 import { solutionContent } from '@/lib/landing/content';
 
 const iconMap = {
@@ -20,28 +19,12 @@ const iconMap = {
 };
 
 export function SolutionSection() {
-  const items = solutionContent.items.map((item) => {
-    const Icon = iconMap[item.icon as keyof typeof iconMap];
-    return {
-      title: item.title,
-      description: item.description,
-      header: (
-        <div className="flex h-full min-h-[120px] w-full items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
-          <Icon size={48} weight="duotone" className="text-primary" />
-        </div>
-      ),
-      className:
-        item.size === 'large'
-          ? 'md:col-span-1'
-          : item.size === 'wide'
-            ? 'md:col-span-2'
-            : 'md:col-span-1',
-    };
-  });
+  const mainFeatures = solutionContent.items.slice(0, 2);
+  const subFeatures = solutionContent.items.slice(2);
 
   return (
     <section id="solution" className="bg-muted/30 py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -54,17 +37,59 @@ export function SolutionSection() {
           </h2>
         </motion.div>
 
-        <BentoGrid className="mx-auto max-w-5xl">
-          {items.map((item, i) => (
-            <BentoGridItem
-              key={i}
-              title={item.title}
-              description={item.description}
-              header={item.header}
-              className={item.className}
-            />
-          ))}
-        </BentoGrid>
+        {/* Main 2 features - larger cards */}
+        <div className="mb-6 grid gap-6 md:grid-cols-2">
+          {mainFeatures.map((item, i) => {
+            const Icon = iconMap[item.icon as keyof typeof iconMap];
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                viewport={{ once: true }}
+                className="group relative overflow-hidden rounded-2xl border border-border bg-card p-8 transition-all hover:border-primary/30 hover:shadow-lg"
+              >
+                <div className="mb-6 inline-flex rounded-xl bg-primary/10 p-4">
+                  <Icon size={32} weight="duotone" className="text-primary" />
+                </div>
+                <h3 className="mb-3 text-xl font-bold text-foreground">
+                  {item.title}
+                </h3>
+                <p className="text-muted-foreground">{item.description}</p>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Sub features - 3 column grid */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          {subFeatures.map((item, i) => {
+            const Icon = iconMap[item.icon as keyof typeof iconMap];
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
+                viewport={{ once: true }}
+                className="group flex items-start gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md"
+              >
+                <div className="shrink-0 rounded-lg bg-primary/10 p-3">
+                  <Icon size={24} weight="duotone" className="text-primary" />
+                </div>
+                <div>
+                  <h4 className="mb-1 font-semibold text-foreground">
+                    {item.title}
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    {item.description}
+                  </p>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

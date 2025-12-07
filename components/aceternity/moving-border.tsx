@@ -58,13 +58,13 @@ export function MovingBorder({
   return (
     <Component
       className={cn(
-        'relative h-12 overflow-hidden bg-transparent p-[1px] text-sm',
+        'relative h-12 overflow-visible bg-transparent p-[1px] text-sm',
         containerClassName
       )}
       {...props}
     >
       <div
-        className="absolute inset-0"
+        className="pointer-events-none absolute inset-0 overflow-visible"
         style={{ borderRadius: `calc(${rx} * 0.96)` }}
       >
         <svg
@@ -135,15 +135,15 @@ export function Button({
   return (
     <Component
       className={cn(
-        'relative h-12 w-fit overflow-hidden bg-transparent p-[1px] text-sm',
+        'relative h-12 w-fit overflow-visible bg-transparent p-[1px] text-sm',
         containerClassName
       )}
       style={{ borderRadius }}
       {...props}
     >
       <div
-        className="absolute inset-0"
-        style={{ borderRadius: `calc(${borderRadius} * 0.96)` }}
+        className="pointer-events-none absolute inset-0 overflow-visible"
+        style={{ borderRadius }}
       >
         <Movingborder duration={duration} rx="30%" ry="30%">
           <div

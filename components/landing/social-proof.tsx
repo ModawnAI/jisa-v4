@@ -40,7 +40,6 @@ export function SocialProof() {
           className="mb-12 flex flex-wrap items-center justify-center gap-8 md:gap-16"
         >
           {[
-            { value: '500+', label: '도입 기업' },
             { value: '90%', label: '문의 감소' },
             { value: '100%', label: '카톡 접근성' },
           ].map((stat, idx) => (

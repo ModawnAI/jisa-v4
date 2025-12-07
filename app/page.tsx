@@ -10,7 +10,6 @@ import { HowItWorksSection } from '@/components/landing/how-it-works-section';
 import { TestimonialsSection } from '@/components/landing/testimonials-section';
 import { PricingSection } from '@/components/landing/pricing-section';
 import { FaqSection } from '@/components/landing/faq-section';
-import { PoweredBySection } from '@/components/landing/powered-by-section';
 import { CtaSection } from '@/components/landing/cta-section';
 
 export default function HomePage() {
@@ -47,9 +46,6 @@ export default function HomePage() {
 
         {/* FAQ - Accordion */}
         <FaqSection />
-
-        {/* Powered By - Tech stack logos */}
-        <PoweredBySection />
 
         {/* Final CTA - Spotlight effect */}
         <CtaSection />
