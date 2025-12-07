@@ -7,7 +7,7 @@ export const heroContent = {
     '급여, 영업정책, 사내규정, 복리후생 — 직원들이 궁금한 모든 것을 AI가 즉시 답변합니다. 문서 업로드 한 번이면 세팅 끝. 운영도, 유지보수도 필요 없습니다.',
   stats: [
     { value: '3분', label: '세팅 완료' },
-    { value: '500원', label: '1인/1일' },
+    { value: '4,900원', label: '월/1인' },
     { value: '24/7', label: 'AI 응답' },
   ],
   primaryCta: '무료로 시작하기',
@@ -247,13 +247,13 @@ export const testimonialsContent = {
 
 export const pricingContent = {
   title: '부담 없는 가격',
-  subtitle: '커피 한 잔 값도 안 되는 비용',
+  subtitle: '커피 한 잔 값으로 시작하세요',
   price: {
-    amount: '500',
+    amount: '4,900',
     unit: '원',
-    period: '1인 / 1일',
+    period: '월 / 1인',
   },
-  description: '월 1만 5천원 / 1인 (월 기준)',
+  description: '연 결제 시 20% 할인',
   features: [
     '카카오톡 기반 인증 시스템',
     '직급별 정보 접근 권한 설정',

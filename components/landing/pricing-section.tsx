@@ -1,8 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Check } from '@phosphor-icons/react';
+import { Check, ArrowRight, Sparkle } from '@phosphor-icons/react';
 import Link from 'next/link';
+import { MovingBorder } from '@/components/aceternity/moving-border';
 import { pricingContent } from '@/lib/landing/content';
 
 export function PricingSection() {
@@ -67,13 +68,27 @@ export function PricingSection() {
           </div>
 
           {/* CTA */}
-          <div className="text-center">
-            <Link
-              href="#cta"
-              className="inline-block rounded-xl bg-primary px-10 py-4 text-lg font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-lg"
-            >
-              {pricingContent.cta}
+          <div className="flex flex-col items-center gap-4 text-center">
+            <Link href="/signup">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <MovingBorder
+                  borderRadius="1rem"
+                  className="bg-gradient-to-r from-primary via-primary to-blue-600 px-12 py-5 text-lg font-bold text-primary-foreground shadow-xl shadow-primary/25"
+                >
+                  <span className="flex items-center gap-3">
+                    <Sparkle size={20} weight="fill" />
+                    {pricingContent.cta}
+                    <ArrowRight size={20} weight="bold" />
+                  </span>
+                </MovingBorder>
+              </motion.div>
             </Link>
+            <p className="text-sm text-muted-foreground">
+              3분 만에 설정 완료 · 신용카드 불필요
+            </p>
           </div>
         </motion.div>
 
