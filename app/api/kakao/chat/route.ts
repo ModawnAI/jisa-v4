@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
       if (!codeMatch) {
         console.log('[KakaoTalk] No code found - requesting verification');
         return NextResponse.json(
-          createKakaoResponse(`안녕하세요! JISA 챗봇입니다.
+          createKakaoResponse(`안녕하세요! 모드온 AI입니다.
 
 처음 사용하시는 분은 관리자로부터 받은 인증 코드를 입력해주세요.
 
@@ -422,7 +422,7 @@ export async function POST(request: NextRequest) {
 역할: ${roleNames[verificationCode.role] || verificationCode.role}
 등급: ${tierNames[verificationCode.tier] || verificationCode.tier}
 
-이제 JISA에게 질문하실 수 있습니다.
+이제 모드온 AI에게 질문하실 수 있습니다.
 
 예시 질문:
 • 일반 질문: "11월 교육 일정 알려줘"
@@ -437,7 +437,7 @@ export async function POST(request: NextRequest) {
 역할: ${roleNames[verificationCode.role] || verificationCode.role}
 등급: ${tierNames[verificationCode.tier] || verificationCode.tier}
 
-이제 JISA에게 질문하실 수 있습니다.
+이제 모드온 AI에게 질문하실 수 있습니다.
 
 예시 질문:
 • "11월 교육 일정 알려줘"

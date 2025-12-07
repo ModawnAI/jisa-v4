@@ -22,12 +22,12 @@ export const chatSettings = pgTable('chat_settings', {
   id: uuid('id').defaultRandom().primaryKey(),
 
   // Agent Identity
-  agentName: text('agent_name').notNull().default('지사앱 AI'),
+  agentName: text('agent_name').notNull().default('모드온 AI'),
   agentEmoji: text('agent_emoji').default('🤖'),
 
   // Welcome message for new users
   welcomeMessage: text('welcome_message').notNull().default(`안녕하세요! 👋
-지사앱 AI입니다.
+모드온 AI입니다.
 
 무엇을 도와드릴까요?
 

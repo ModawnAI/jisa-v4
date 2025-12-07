@@ -65,9 +65,9 @@ export function AdminSidebar() {
         {!collapsed && (
           <Link href="/dashboard" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <span className="text-sm font-bold">J</span>
+              <span className="text-sm font-bold">M</span>
             </div>
-            <span className="font-semibold">지사앱</span>
+            <span className="font-semibold">모드온</span>
           </Link>
         )}
         <Button

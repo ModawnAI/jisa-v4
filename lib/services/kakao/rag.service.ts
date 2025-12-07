@@ -329,7 +329,7 @@ export async function generateAnswerWithGemini(
 - 들여쓰기와 줄바꿈만으로 구조를 표현하세요
 `;
 
-  const prompt = `당신은 HO&F 지사 AI입니다. 아래 검색된 정보를 바탕으로 사용자 질문에 정확하고 친절하게 답변하세요.
+  const prompt = `당신은 모드온 AI입니다. 아래 검색된 정보를 바탕으로 사용자 질문에 정확하고 친절하게 답변하세요.
 
 사용자 질문:
 ${userQuery}
@@ -403,7 +403,7 @@ export async function ragAnswer(userQuery: string, topK: number = 10): Promise<s
 
       if (maxScore < RELEVANCE_THRESHOLD) {
         console.log('[RAG] Low relevance detected');
-        return `안녕하세요. HO&F 지사 AI입니다.
+        return `안녕하세요. 모드온 AI입니다.
 
 질문하신 내용과 관련된 정보를 찾기 어렵습니다.
 
