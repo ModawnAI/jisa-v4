@@ -13,6 +13,8 @@ const publicRoutes = [
   '/terms',
   '/privacy',
   '/legal',
+  '/opengraph-image',
+  '/twitter-image',
 ];
 
 // API routes that don't require authentication
