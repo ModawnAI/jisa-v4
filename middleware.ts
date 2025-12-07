@@ -3,6 +3,7 @@ import { updateSession } from '@/lib/supabase/middleware';
 
 // Routes that don't require authentication
 const publicRoutes = [
+  '/',
   '/login',
   '/signup',
   '/forgot-password',
@@ -23,7 +24,9 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if it's a public route
-  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
+  const isPublicRoute = publicRoutes.some((route) =>
+    route === '/' ? pathname === '/' : pathname.startsWith(route)
+  );
   const isPublicApiRoute = publicApiRoutes.some((route) => pathname.startsWith(route));
 
   // Static files don't need auth check
@@ -37,15 +40,6 @@ export async function middleware(request: NextRequest) {
 
   // Update session and check authentication
   const { user, supabaseResponse } = await updateSession(request);
-
-  // Handle root path - redirect based on auth status
-  if (pathname === '/') {
-    if (user) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    } else {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-  }
 
   // Public routes - redirect to dashboard if already authenticated
   if (isPublicRoute || isPublicApiRoute) {
