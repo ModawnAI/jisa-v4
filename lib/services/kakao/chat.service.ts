@@ -8,7 +8,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { detectCommissionQuery } from './commission-detector.service';
 import { ragAnswer, ragAnswerWithRBAC } from './rag.service';
-import { isEmployeeRAGQuery, cleanEmployeeRAGQuery, queryEmployeeRAG } from './employee-rag.service';
+import { isEmployeeRAGQuery, cleanEmployeeRAGQuery, queryEmployeeRAG, getEmployeeInfo } from './employee-rag.service';
 import type { CommissionResult } from '@/lib/types/kakao';
 
 // Lazy initialization of Gemini client
@@ -111,38 +111,42 @@ export async function getTextFromGPT(prompt: string, userId?: string | null): Pr
   try {
     console.log('='.repeat(80));
 
-    // Step 0: Check for Employee RAG query (starts with "/")
-    if (isEmployeeRAGQuery(prompt)) {
-      console.log('[Chat] Routing to EMPLOYEE RAG SYSTEM (/ command detected)');
+    // Step 0: Check for Employee RAG query (personal keywords detected)
+    // Only route to employee RAG if user has RAG enabled
+    if (userId && isEmployeeRAGQuery(prompt)) {
+      // Check if user has employee RAG enabled
+      const employeeInfo = await getEmployeeInfo(userId);
 
-      if (!userId) {
-        return '죄송합니다. "/" 명령어는 등록된 직원만 사용할 수 있습니다. 먼저 등록 코드로 인증해주세요.';
-      }
+      if (employeeInfo?.ragEnabled && employeeInfo?.pineconeNamespace) {
+        console.log('[Chat] Routing to EMPLOYEE RAG SYSTEM (personal query + RAG enabled)');
 
-      try {
-        const cleanQuery = cleanEmployeeRAGQuery(prompt);
-        console.log(`[Chat] Cleaned query: ${cleanQuery}`);
+        try {
+          const cleanQuery = cleanEmployeeRAGQuery(prompt);
+          console.log(`[Chat] Cleaned query: ${cleanQuery}`);
 
-        const result = await queryEmployeeRAG({
-          userId,
-          query: cleanQuery,
-          topK: 10,
-        });
+          const result = await queryEmployeeRAG({
+            userId,
+            query: cleanQuery,
+            topK: 10,
+          });
 
-        return result.answer;
-      } catch (error) {
-        console.error('[Chat] Employee RAG error:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          return result.answer;
+        } catch (error) {
+          console.error('[Chat] Employee RAG error:', error);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-        if (errorMessage.includes('not found')) {
-          return '직원 정보를 찾을 수 없습니다. 관리자에게 문의해주세요.';
+          if (errorMessage.includes('not found')) {
+            return '직원 정보를 찾을 수 없습니다. 관리자에게 문의해주세요.';
+          }
+
+          if (errorMessage.includes('not enabled')) {
+            return 'RAG 시스템이 활성화되지 않았습니다. 관리자에게 문의해주세요.';
+          }
+
+          return `급여 정보 조회 중 오류가 발생했습니다: ${errorMessage}`;
         }
-
-        if (errorMessage.includes('not enabled')) {
-          return 'RAG 시스템이 활성화되지 않았습니다. 관리자에게 문의해주세요.';
-        }
-
-        return `급여 정보 조회 중 오류가 발생했습니다: ${errorMessage}`;
+      } else {
+        console.log('[Chat] Personal query detected but user has no employee RAG - routing to general RAG');
       }
     }
 

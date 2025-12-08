@@ -443,14 +443,36 @@ export async function queryEmployeeRAG(
 }
 
 /**
- * Detect if query should use employee RAG (starts with "/")
+ * Personal/employee keywords that indicate the user is asking about their own data
+ */
+const PERSONAL_KEYWORDS = [
+  '내', '나의', '제', '저의',  // my, mine
+  '본인', '내꺼', '내것',      // myself
+  '급여', '월급', '수당',      // salary, pay, allowance
+  '지급', '수수료', '정산',    // payment, commission, settlement
+  '실적', '성과', '건수',      // performance, results, count
+  '계약', '보험', '청약',      // contract, insurance, application
+];
+
+/**
+ * Detect if query should use employee RAG
+ * - Previously required "/" prefix
+ * - Now auto-detects based on personal keywords
  */
 export function isEmployeeRAGQuery(query: string): boolean {
-  return query.trim().startsWith('/');
+  const trimmed = query.trim().toLowerCase();
+
+  // Legacy: still support "/" prefix for backwards compatibility
+  if (trimmed.startsWith('/')) {
+    return true;
+  }
+
+  // Auto-detect personal queries
+  return PERSONAL_KEYWORDS.some(keyword => trimmed.includes(keyword));
 }
 
 /**
- * Strip "/" prefix from employee RAG query
+ * Strip "/" prefix from employee RAG query (if present)
  */
 export function cleanEmployeeRAGQuery(query: string): string {
   return query.trim().replace(/^\/+/, '').trim();
