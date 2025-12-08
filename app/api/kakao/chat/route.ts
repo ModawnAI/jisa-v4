@@ -363,11 +363,9 @@ export async function POST(request: NextRequest) {
 이제 모드온 AI에게 질문하실 수 있습니다.
 
 예시 질문:
-• 일반 질문: "11월 교육 일정 알려줘"
-• 내 급여 정보: "/ 보험계약 건별 수수료 알려줘"
-• 내 계약 정보: "/ 메리츠화재 계약 현황"
-
-본인 급여 정보 조회는 반드시 "/" 로 시작하세요!`
+• "11월 교육 일정 알려줘"
+• "내 보험계약 건별 수수료 알려줘"
+• "내 메리츠화재 계약 현황"`
         : `인증 완료!
 
 이름: ${displayName}
@@ -383,8 +381,8 @@ export async function POST(request: NextRequest) {
 
       const quickReplies = isEmployee
         ? [
-            { action: 'message', label: '내 급여 정보', messageText: '/ 내 최종지급액 알려줘' },
-            { action: 'message', label: '내 계약 현황', messageText: '/ 보험계약 건별 수수료' },
+            { action: 'message', label: '내 급여 정보', messageText: '내 최종지급액 알려줘' },
+            { action: 'message', label: '내 계약 현황', messageText: '내 보험계약 건별 수수료' },
             { action: 'message', label: '일반 정보', messageText: '11월 교육 일정' },
           ]
         : [
