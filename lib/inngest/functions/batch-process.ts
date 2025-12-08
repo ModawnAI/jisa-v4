@@ -212,6 +212,8 @@ export const batchProcess = inngest.createFunction(
           processingBatchId: batchId,
           originalRowIndex: item.rowIndex,
           createdAt: new Date().toISOString(),
+          // CRITICAL: Store the content as searchable text for RAG retrieval
+          searchable_text: item.content,
           ...item.metadata,
         };
 
@@ -479,6 +481,9 @@ export const batchProcessV2 = inngest.createFunction(
           processingBatchId: batchId,
           originalRowIndex: chunk.chunkIndex,
           createdAt: new Date().toISOString(),
+          // CRITICAL: Store the embedding text for RAG retrieval
+          // This text is what semantic search will match against
+          searchable_text: chunk.embeddingText,
           // Spread processor-specific metadata
           processorType,
           namespaceStrategy,

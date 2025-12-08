@@ -121,23 +121,26 @@ export async function searchEmployeeNamespace(
 
   // Layer 1: Namespace isolation (infrastructure-level)
   // Layer 2: Metadata filter (query-level backup security)
+  // Note: MDRT data uses "employeeId" field, not "사번"
   const queryParams = {
     vector: embedding,
     topK,
     includeMetadata: true,
     filter: {
-      사번: { $eq: employeeId }, // Backup security layer
+      employeeId: { $eq: employeeId }, // Backup security layer - matches MDRT processor
     },
   };
 
   const results = await index.namespace(namespace).query(queryParams);
 
   // Layer 3: Validate results (application-level paranoid check)
+  // Note: MDRT data uses "employeeId" field, not "사번"
   for (const match of results.matches || []) {
-    if (match.metadata?.사번 !== employeeId) {
+    const metaEmployeeId = match.metadata?.employeeId || match.metadata?.사번;
+    if (metaEmployeeId !== employeeId) {
       console.error('[Employee RAG] SECURITY VIOLATION: Data leak detected!');
       console.error(`   Expected employee: ${employeeId}`);
-      console.error(`   Got employee: ${match.metadata?.사번}`);
+      console.error(`   Got employee: ${metaEmployeeId}`);
       throw new Error('Security validation failed: employee ID mismatch');
     }
   }
