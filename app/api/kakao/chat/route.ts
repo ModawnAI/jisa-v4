@@ -11,7 +11,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { randomUUID } from 'crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getTextFromGPT } from '@/lib/services/kakao/chat.service';
 import type {
@@ -95,24 +94,15 @@ export async function POST(request: NextRequest) {
 
       // Find and delete the user's profile
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('id, full_name, email')
+        .from('kakao_profiles')
+        .select('id, display_name')
         .eq('kakao_user_id', kakaoUserId)
         .single();
 
       if (profile) {
-        // Delete the auth user first (this will cascade delete the profile via trigger)
-        const { error: authDeleteError } = await supabase.auth.admin.deleteUser(profile.id);
-
-        if (authDeleteError) {
-          console.error('[KakaoTalk] Failed to delete auth user:', authDeleteError);
-        } else {
-          console.log(`[KakaoTalk] Successfully deleted auth user: ${profile.id}`);
-        }
-
-        // Delete the profile (in case trigger didn't work)
+        // Delete the profile
         const { error: deleteError } = await supabase
-          .from('profiles')
+          .from('kakao_profiles')
           .delete()
           .eq('id', profile.id);
 
@@ -120,7 +110,7 @@ export async function POST(request: NextRequest) {
           console.error('[KakaoTalk] Failed to delete profile:', deleteError);
         }
 
-        console.log(`[KakaoTalk] Successfully deleted profile and auth user: ${profile.id}`);
+        console.log(`[KakaoTalk] Successfully deleted profile: ${profile.id}`);
 
         // Log the deletion event
         await supabase.from('analytics_events').insert({
@@ -128,8 +118,7 @@ export async function POST(request: NextRequest) {
           kakao_user_id: kakaoUserId,
           user_id: profile.id,
           metadata: {
-            full_name: profile.full_name,
-            email: profile.email,
+            display_name: profile.display_name,
             deleted_at: new Date().toISOString(),
           },
         });
@@ -152,7 +141,7 @@ export async function POST(request: NextRequest) {
     // =====================================================
 
     const { data: profile, error: profileError } = await supabase
-      .from('profiles')
+      .from('kakao_profiles')
       .select('*')
       .eq('kakao_user_id', kakaoUserId)
       .single();
@@ -262,110 +251,30 @@ export async function POST(request: NextRequest) {
 
       console.log(`[KakaoTalk] Creating profile with role=${verificationCode.role}, tier=${verificationCode.tier}`);
 
-      // Create auth user first (KakaoTalk users don't have email/password)
-      const dummyEmail = `kakao_${kakaoUserId.substring(0, 8)}@kakao.internal`;
-      const dummyPassword = randomUUID();
-
-      console.log(`[KakaoTalk] Checking for existing user with email: ${dummyEmail}`);
-
-      // Check if user already exists by kakao_user_id OR email
-      let authUserId: string;
-
-      // First try kakao_user_id
-      let { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('kakao_user_id', kakaoUserId)
-        .single();
-
-      // If not found, try by email (from previous failed attempts)
-      if (!existingProfile) {
-        const profileByEmail = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('email', dummyEmail)
-          .single();
-
-        existingProfile = profileByEmail.data;
-      }
-
-      if (existingProfile) {
-        console.log(`[KakaoTalk] User already exists, using existing profile: ${existingProfile.id}`);
-        authUserId = existingProfile.id;
-      } else {
-        // Check if auth user exists by email (from previous failed attempts)
-        console.log(`[KakaoTalk] Checking for existing auth user with email: ${dummyEmail}`);
-        const { data: existingAuthUsers } = await supabase.auth.admin.listUsers();
-        const existingAuthUser = existingAuthUsers?.users?.find(
-          (u: { email?: string }) => u.email === dummyEmail
-        );
-
-        if (existingAuthUser) {
-          console.log(`[KakaoTalk] Found existing auth user without profile, deleting: ${existingAuthUser.id}`);
-          const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(existingAuthUser.id);
-
-          if (deleteAuthError) {
-            console.error('[KakaoTalk] Failed to delete existing auth user:', deleteAuthError);
-          } else {
-            console.log(`[KakaoTalk] Successfully deleted orphaned auth user: ${existingAuthUser.id}`);
-          }
-        }
-
-        // Create new auth user
-        console.log(`[KakaoTalk] Creating new auth user with email: ${dummyEmail}`);
-
-        const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-          email: dummyEmail,
-          password: dummyPassword,
-          email_confirm: true,
-          user_metadata: {
-            kakao_user_id: kakaoUserId,
-            kakao_nickname: kakaoNickname,
-            full_name: kakaoNickname,
-          },
-        });
-
-        if (authError || !authUser.user) {
-          console.error('[KakaoTalk] Auth user creation failed:', authError);
-          return NextResponse.json(
-            createKakaoResponse(`인증 처리 중 오류가 발생했습니다.
-
-잠시 후 다시 시도해주세요.
-문제가 지속되면 관리자에게 문의하세요.`)
-          );
-        }
-
-        console.log(`[KakaoTalk] Auth user created: ${authUser.user.id}`);
-        authUserId = authUser.user.id;
-      }
-
-      // Profile is auto-created by trigger, so update it with KakaoTalk info
+      // Create or update kakao_profiles directly (no auth user needed)
       const { data: newProfile, error: createError } = await supabase
-        .from('profiles')
-        .update({
+        .from('kakao_profiles')
+        .upsert({
           kakao_user_id: kakaoUserId,
-          kakao_nickname: kakaoNickname,
-          full_name: kakaoNickname,
+          display_name: kakaoNickname,
+          employee_id: verificationCode.employee_id || null,
+          employee_sabon: verificationCode.employee_code || null,
           role: verificationCode.role,
           subscription_tier: verificationCode.tier,
-          query_count: 0,
-          permissions: [],
-          // Employee RAG fields
           pinecone_namespace: verificationCode.pinecone_namespace || null,
           rag_enabled: !!verificationCode.pinecone_namespace,
-          credential_id: verificationCode.intended_recipient_id || null,
+          is_verified: true,
+          verified_at: new Date().toISOString(),
+          verified_with_code: code,
+          last_active_at: new Date().toISOString(),
+          message_count: '0',
           metadata: {
             verification_code: code,
             verified_at: new Date().toISOString(),
-            code_purpose: (verificationCode as Record<string, unknown>).purpose,
-            code_metadata: verificationCode.metadata,
-            employee_sabon: verificationCode.employee_sabon || null,
           },
-          verified_with_code: code,
-          first_chat_at: new Date().toISOString(),
-          last_chat_at: new Date().toISOString(),
+        }, {
+          onConflict: 'kakao_user_id',
         })
-        .eq('id', authUserId)
         .select()
         .single();
 
@@ -378,6 +287,8 @@ export async function POST(request: NextRequest) {
 문제가 지속되면 관리자에게 문의하세요.`)
         );
       }
+
+      console.log(`[KakaoTalk] Profile created/updated: ${newProfile.id}`);
 
       // Update verification code usage
       const usedBy = verificationCode.used_by || [];
@@ -407,18 +318,17 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Get recipient name and email from verification code
-      const recipientName = verificationCode.intended_recipient_name || newProfile.full_name || kakaoNickname;
-      const recipientEmail = verificationCode.intended_recipient_email || newProfile.email || dummyEmail;
+      // Get recipient name from verification code or profile
+      const recipientName = verificationCode.intended_recipient_name || newProfile.display_name || kakaoNickname;
 
       // Customize message for employees vs admins
-      const isEmployee = !!verificationCode.pinecone_namespace && !!verificationCode.employee_sabon;
+      const isEmployee = !!verificationCode.pinecone_namespace && !!verificationCode.employee_code;
 
       const welcomeText = isEmployee
         ? `인증 완료!
 
 이름: ${recipientName}
-이메일: ${recipientEmail}
+사번: ${verificationCode.employee_code}
 역할: ${roleNames[verificationCode.role] || verificationCode.role}
 등급: ${tierNames[verificationCode.tier] || verificationCode.tier}
 
@@ -433,7 +343,6 @@ export async function POST(request: NextRequest) {
         : `인증 완료!
 
 이름: ${recipientName}
-이메일: ${recipientEmail}
 역할: ${roleNames[verificationCode.role] || verificationCode.role}
 등급: ${tierNames[verificationCode.tier] || verificationCode.tier}
 
@@ -475,8 +384,8 @@ export async function POST(request: NextRequest) {
 
       // Update last chat timestamp in background (don't block response!)
       supabase
-        .from('profiles')
-        .update({ last_chat_at: new Date().toISOString() })
+        .from('kakao_profiles')
+        .update({ last_active_at: new Date().toISOString() })
         .eq('id', profile.id)
         .then(() => console.log('[KakaoTalk] Last chat timestamp updated'));
 
@@ -543,8 +452,8 @@ export async function POST(request: NextRequest) {
 
     // Update last chat timestamp in background (don't block response!)
     supabase
-      .from('profiles')
-      .update({ last_chat_at: new Date().toISOString() })
+      .from('kakao_profiles')
+      .update({ last_active_at: new Date().toISOString() })
       .eq('id', profile.id)
       .then(() => console.log('[KakaoTalk] Last chat timestamp updated'));
 

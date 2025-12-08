@@ -5,6 +5,7 @@ import {
   boolean,
   timestamp,
   index,
+  jsonb,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { employees } from './employees';
@@ -23,17 +24,27 @@ export const kakaoProfiles = pgTable('kakao_profiles', {
 
   // Employee linkage (via verification)
   employeeId: uuid('employee_id').references(() => employees.id, { onDelete: 'set null' }),
+  employeeSabon: text('employee_sabon'),
 
-  // Subscription tier for RBAC
+  // RBAC fields
+  role: text('role').notNull().default('user'),
   subscriptionTier: text('subscription_tier').notNull().default('free'),
+
+  // Employee RAG fields
+  pineconeNamespace: text('pinecone_namespace'),
+  ragEnabled: boolean('rag_enabled').notNull().default(false),
 
   // Verification status
   isVerified: boolean('is_verified').notNull().default(false),
   verifiedAt: timestamp('verified_at', { withTimezone: true }),
+  verifiedWithCode: text('verified_with_code'),
 
   // Activity tracking
   lastActiveAt: timestamp('last_active_at', { withTimezone: true }),
   messageCount: text('message_count').default('0'),
+
+  // Metadata
+  metadata: jsonb('metadata').default({}),
 
   // Audit
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -42,6 +53,7 @@ export const kakaoProfiles = pgTable('kakao_profiles', {
   index('idx_kakao_user_id').on(table.kakaoUserId),
   index('idx_kakao_employee_id').on(table.employeeId),
   index('idx_kakao_verified').on(table.isVerified),
+  index('idx_kakao_role').on(table.role),
 ]);
 
 export const kakaoProfilesRelations = relations(kakaoProfiles, ({ one }) => ({

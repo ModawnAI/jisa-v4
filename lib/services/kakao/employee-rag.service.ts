@@ -51,17 +51,20 @@ const RELEVANCE_THRESHOLD = 0.3;
 export async function getEmployeeInfo(profileId: string): Promise<EmployeeInfo | null> {
   const supabase = await createServiceClient();
 
+  // Get profile with employee join
   const { data: profile, error } = await supabase
-    .from('profiles')
+    .from('kakao_profiles')
     .select(`
       id,
       pinecone_namespace,
       rag_enabled,
-      credential_id,
-      user_credentials!profiles_credential_id_fkey (
-        employee_id,
-        full_name,
-        rag_vector_count
+      employee_id,
+      employee_sabon,
+      display_name,
+      employees (
+        id,
+        name,
+        employee_id
       )
     `)
     .eq('id', profileId)
@@ -72,33 +75,28 @@ export async function getEmployeeInfo(profileId: string): Promise<EmployeeInfo |
     return null;
   }
 
-  // user_credentials can be an object or array depending on Supabase join type
-  const rawCredential = profile.user_credentials;
-  const credential = (
-    Array.isArray(rawCredential) ? rawCredential[0] : rawCredential
-  ) as {
-    employee_id: string;
-    full_name: string;
-    rag_vector_count: number;
-  } | null;
+  // Get employee data from join or sabon (join can return array or object)
+  const rawEmployee = profile.employees;
+  const employee = (Array.isArray(rawEmployee) ? rawEmployee[0] : rawEmployee) as { id: string; name: string; employee_id: string } | null;
+  const employeeSabon = profile.employee_sabon || employee?.employee_id;
 
-  if (!credential || !credential.employee_id) {
-    console.error('[Employee RAG] No employee credential found for profile:', profileId);
+  if (!employeeSabon) {
+    console.error('[Employee RAG] No employee 사번 found for profile:', profileId);
     return null;
   }
 
   if (!profile.pinecone_namespace) {
-    console.error('[Employee RAG] No Pinecone namespace configured for employee:', credential.employee_id);
+    console.error('[Employee RAG] No Pinecone namespace configured for employee:', employeeSabon);
     return null;
   }
 
   return {
     profileId: profile.id,
-    employeeId: credential.employee_id,
-    fullName: credential.full_name,
+    employeeId: employeeSabon,
+    fullName: employee?.name || profile.display_name || '사용자',
     pineconeNamespace: profile.pinecone_namespace,
     ragEnabled: profile.rag_enabled || false,
-    vectorCount: credential.rag_vector_count || 0,
+    vectorCount: 0, // Will be fetched from Pinecone stats if needed
   };
 }
 

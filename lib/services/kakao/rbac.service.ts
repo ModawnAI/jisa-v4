@@ -70,7 +70,7 @@ export class RBACService {
     const supabase = await createServiceClient();
 
     const { data, error } = await supabase
-      .from('profiles')
+      .from('kakao_profiles')
       .select('*')
       .eq('id', userId)
       .single();
