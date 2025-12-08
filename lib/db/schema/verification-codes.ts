@@ -41,6 +41,9 @@ export const verificationCodes = pgTable('verification_codes', {
   // Subscription tier: enterprise, pro, basic, free
   tier: text('tier').notNull().default('free'),
 
+  // Employee RAG namespace (format: emp_{employee_uuid})
+  pineconeNamespace: text('pinecone_namespace'),
+
   // Usage limits
   maxUses: integer('max_uses').notNull().default(1),
   currentUses: integer('current_uses').notNull().default(0),

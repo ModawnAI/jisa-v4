@@ -111,6 +111,9 @@ export const verificationCodeService = {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
+    // Generate Pinecone namespace for employee RAG
+    const pineconeNamespace = `emp_${emp.id}`;
+
     // Create verification code
     const result = await db
       .insert(verificationCodes)
@@ -120,6 +123,7 @@ export const verificationCodeService = {
         employeeCode: emp.employeeId,
         role,
         tier,
+        pineconeNamespace,
         maxUses,
         expiresAt,
         description,
