@@ -11,6 +11,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getTextFromGPT } from '@/lib/services/kakao/chat.service';
 import type {
@@ -408,16 +409,20 @@ export async function POST(request: NextRequest) {
     if (callbackUrl) {
       console.log('[KakaoTalk] CallbackURL detected - returning immediate response and processing in background');
 
-      // Update last chat timestamp in background (don't block response!)
-      supabase
-        .from('kakao_profiles')
-        .update({ last_active_at: new Date().toISOString() })
-        .eq('id', profile.id)
-        .then(() => console.log('[KakaoTalk] Last chat timestamp updated'));
+      // Use Next.js after() to ensure background work completes in serverless
+      // This keeps the function alive after the response is sent
+      after(async () => {
+        try {
+          // Update last chat timestamp
+          await supabase
+            .from('kakao_profiles')
+            .update({ last_active_at: new Date().toISOString() })
+            .eq('id', profile.id);
+          console.log('[KakaoTalk] Last chat timestamp updated');
 
-      // Start background processing (don't await!)
-      getTextFromGPT(userMessage, profile.id)
-        .then(async (finalResponse) => {
+          // Process the query
+          console.log('[KakaoTalk] Starting background RAG processing...');
+          const finalResponse = await getTextFromGPT(userMessage, profile.id);
           console.log('[KakaoTalk] Background processing complete, sending to callback URL');
 
           // Send response to callback URL
@@ -454,10 +459,10 @@ export async function POST(request: NextRequest) {
               via_callback: true,
             },
           });
-        })
-        .catch((bgError) => {
+        } catch (bgError) {
           console.error('[KakaoTalk] Background processing error:', bgError);
-        });
+        }
+      });
 
       // Return IMMEDIATE response with useCallback (< 100ms)
       console.log('[KakaoTalk] Returning immediate useCallback response');
