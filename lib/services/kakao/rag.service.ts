@@ -46,6 +46,7 @@ function getPineconeClient(): Pinecone {
 // Constants from environment
 const INDEX_NAME = process.env.PINECONE_INDEX_NAME || process.env.PINECONE_INDEX || 'jisa-v4';
 const NAMESPACE = process.env.KAKAO_RAG_NAMESPACE || 'kakao-chatbot';
+const PUBLIC_NAMESPACE = 'public'; // Public documents accessible to everyone
 const RELEVANCE_THRESHOLD = 0.3;
 
 /**
@@ -267,6 +268,63 @@ export async function searchPinecone(
 }
 
 /**
+ * Search multiple namespaces and merge results by score
+ */
+export async function searchMultipleNamespaces(
+  embedding: number[],
+  filters: Record<string, unknown> | null = null,
+  topK: number = 10,
+  namespaces: string[] = [NAMESPACE, PUBLIC_NAMESPACE]
+): Promise<PineconeQueryResult> {
+  const pinecone = getPineconeClient();
+  const index = pinecone.index(INDEX_NAME);
+
+  // Search all namespaces in parallel
+  const searchPromises = namespaces.map(async (ns) => {
+    const queryParams: {
+      vector: number[];
+      topK: number;
+      includeMetadata: boolean;
+      filter?: Record<string, unknown>;
+    } = {
+      vector: embedding,
+      topK,
+      includeMetadata: true,
+    };
+
+    // Only apply filters for non-public namespaces (public docs have simpler structure)
+    if (filters && ns !== PUBLIC_NAMESPACE) {
+      queryParams.filter = filters;
+    }
+
+    try {
+      const results = await index.namespace(ns).query(queryParams);
+      return (results.matches || []).map(match => ({
+        id: match.id,
+        score: match.score ?? 0,
+        metadata: {
+          ...(match.metadata as Record<string, unknown>) || {},
+          _namespace: ns, // Track source namespace
+        },
+      }));
+    } catch (error) {
+      console.error(`[RAG] Error searching namespace ${ns}:`, error);
+      return [];
+    }
+  });
+
+  const allResults = await Promise.all(searchPromises);
+
+  // Merge and sort all results by score
+  const mergedMatches = allResults
+    .flat()
+    .sort((a, b) => b.score - a.score)
+    .slice(0, topK);
+
+  return { matches: mergedMatches };
+}
+
+/**
  * Step 4: Format context for Gemini
  */
 export function formatContext(results: PineconeQueryResult): string {
@@ -280,28 +338,64 @@ export function formatContext(results: PineconeQueryResult): string {
     const match = results.matches[idx];
     const meta = match.metadata;
     const chunkType = (meta?.chunk_type as string) || 'N/A';
+    const docType = (meta?.doc_type as string) || '';
+    const namespace = (meta?._namespace as string) || '';
 
     const isHanwha = ['table_cell_commission', 'table_row_summary', 'table_column_summary'].includes(chunkType);
     const isSchedule = ['event_individual', 'day_summary', 'event_range'].includes(chunkType);
+    const isPublic = namespace === PUBLIC_NAMESPACE || meta?.is_public === true;
+
+    // Public document types (from public-document-processor)
+    const isPublicCommissionRate = docType === 'commission_rate';
+    const isPublicPolicy = docType === 'policy_announcement';
+    const isPublicSchedule = docType === 'schedule';
 
     let context = `\n## 문서 ${idx + 1} (관련도: ${match.score.toFixed(3)})\n`;
-    context += `\n**출처:** ${(meta?.source_file as string) || 'N/A'}\n`;
-    context += `**유형:** ${chunkType}\n`;
+    context += `\n**출처:** ${(meta?.source_file as string) || (meta?.originalFileName as string) || 'N/A'}\n`;
 
-    if (isSchedule) {
-      if (meta?.title) context += `**제목:** ${meta.title}\n`;
-      if (meta?.date) context += `**날짜:** ${meta.date}\n`;
-      if (meta?.time) context += `**시간:** ${meta.time}\n`;
-      if (meta?.location) context += `**장소:** ${meta.location}\n`;
-      if (meta?.presenter) context += `**강사:** ${meta.presenter}\n`;
-    } else if (isHanwha) {
-      if (meta?.product_name) context += `**상품명:** ${meta.product_name}\n`;
-      if (meta?.payment_term) context += `**납기:** ${meta.payment_term}\n`;
-      if (meta?.commission_label) context += `**시책 유형:** ${meta.commission_label}\n`;
-      if (meta?.commission_value) context += `**수수료율:** ${meta.commission_value}\n`;
+    // Handle public documents (mirroring employee data patterns)
+    if (isPublic) {
+      const docTypeLabels: Record<string, string> = {
+        commission_rate: '수수료율 정보',
+        policy_announcement: '시책/공지',
+        schedule: '일정/시간표',
+        general_info: '일반 정보',
+      };
+      context += `**유형:** ${docTypeLabels[docType] || docType || chunkType}\n`;
+
+      if (isPublicCommissionRate) {
+        if (meta?.insurance_company) context += `**보험사:** ${meta.insurance_company}\n`;
+        if (meta?.product_category) context += `**상품분류:** ${meta.product_category}\n`;
+        if (meta?.sheet_name) context += `**시트:** ${meta.sheet_name}\n`;
+      } else if (isPublicPolicy) {
+        if (meta?.policy_type) context += `**시책유형:** ${meta.policy_type}\n`;
+      } else if (isPublicSchedule) {
+        if (meta?.schedule_type) context += `**교육유형:** ${meta.schedule_type}\n`;
+      }
+
+      if (meta?.period) context += `**기간:** ${meta.period}\n`;
+      if (meta?.effective_date) context += `**시행일:** ${meta.effective_date}\n`;
+      if (meta?.branch) context += `**지사:** ${meta.branch}\n`;
+      if (meta?.page_number) context += `**페이지:** ${meta.page_number}/${meta.total_pages || '?'}\n`;
+    } else {
+      // Handle existing document types
+      context += `**유형:** ${chunkType}\n`;
+
+      if (isSchedule) {
+        if (meta?.title) context += `**제목:** ${meta.title}\n`;
+        if (meta?.date) context += `**날짜:** ${meta.date}\n`;
+        if (meta?.time) context += `**시간:** ${meta.time}\n`;
+        if (meta?.location) context += `**장소:** ${meta.location}\n`;
+        if (meta?.presenter) context += `**강사:** ${meta.presenter}\n`;
+      } else if (isHanwha) {
+        if (meta?.product_name) context += `**상품명:** ${meta.product_name}\n`;
+        if (meta?.payment_term) context += `**납기:** ${meta.payment_term}\n`;
+        if (meta?.commission_label) context += `**시책 유형:** ${meta.commission_label}\n`;
+        if (meta?.commission_value) context += `**수수료율:** ${meta.commission_value}\n`;
+      }
     }
 
-    const searchableText = (meta?.searchable_text as string) || (meta?.natural_description as string) || (meta?.full_text as string) || '';
+    const searchableText = (meta?.searchable_text as string) || (meta?.natural_description as string) || (meta?.full_text as string) || (meta?.text as string) || '';
     if (searchableText) {
       context += `\n**상세 내용:**\n${searchableText}\n`;
     }
@@ -383,16 +477,16 @@ export async function ragAnswer(userQuery: string, topK: number = 10): Promise<s
     const embedding = await generateEmbedding(geminiFlashOutput.enhanced_query);
     console.log(`[RAG] Embedding generated (${embedding.length} dims)`);
 
-    // Step 3: Retrieve from Pinecone
-    console.log(`[RAG] Step 3: Pinecone Search (namespace: ${NAMESPACE}, top ${topK})`);
-    let results = await searchPinecone(embedding, geminiFlashOutput.filters, topK);
+    // Step 3: Retrieve from Pinecone (search both main and public namespaces)
+    console.log(`[RAG] Step 3: Pinecone Search (namespaces: ${NAMESPACE}, ${PUBLIC_NAMESPACE}, top ${topK})`);
+    let results = await searchMultipleNamespaces(embedding, geminiFlashOutput.filters, topK);
 
     console.log(`[RAG] Found ${results.matches.length} documents`);
 
     // Fallback: If no results with filters, retry without filters
     if (results.matches.length === 0 && geminiFlashOutput.filters !== null) {
       console.log('[RAG] No results with filters - retrying without filters...');
-      results = await searchPinecone(embedding, null, topK);
+      results = await searchMultipleNamespaces(embedding, null, topK);
       console.log(`[RAG] Found ${results.matches.length} documents (pure semantic search)`);
     }
 
@@ -617,10 +711,12 @@ const ragService = {
   enhanceQueryWithGeminiFlash,
   generateEmbedding,
   searchPinecone,
+  searchMultipleNamespaces,
   formatContext,
   generateAnswerWithGemini,
   getRelevantPdfs,
   formatPdfAttachments,
+  PUBLIC_NAMESPACE,
 };
 
 export default ragService;

@@ -48,10 +48,10 @@ export async function parsePDF(
 
   try {
     // Get text content with page-wise extraction
-    const textResult = await parser.getText({
-      first: 1,
-      last: maxPages || undefined,
-    });
+    // Only pass options if maxPages is specified to avoid empty result bug
+    const textResult = maxPages
+      ? await parser.getText({ first: 1, last: maxPages })
+      : await parser.getText();
 
     // Get metadata
     const infoResult = await parser.getInfo();

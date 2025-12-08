@@ -17,7 +17,8 @@ export type NamespaceStrategy =
   | 'organization'   // org_{orgId} - Company-wide docs (policies, announcements)
   | 'employee'       // emp_{employeeId} - Personal data (compensation, contracts)
   | 'department'     // dept_{deptId} - Team-level docs
-  | 'document';      // doc_{docId} - Document-specific (large PDFs)
+  | 'document'       // doc_{docId} - Document-specific (large PDFs)
+  | 'public';        // public - General/everyone accessible docs
 
 // =============================================================================
 // Metadata Types

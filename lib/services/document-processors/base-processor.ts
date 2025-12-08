@@ -24,6 +24,7 @@ const NAMESPACE_PREFIXES = {
   employee: 'emp_',
   department: 'dept_',
   document: 'doc_',
+  public: 'public',  // No prefix for public namespace
 } as const;
 
 /**
@@ -96,6 +97,8 @@ export abstract class BaseDocumentProcessor implements DocumentProcessor {
           throw new Error('Document ID required for document namespace strategy');
         }
         return `${NAMESPACE_PREFIXES.document}${context.documentId}`;
+      case 'public':
+        return NAMESPACE_PREFIXES.public;
       default:
         return `${NAMESPACE_PREFIXES.organization}${context.organizationId}`;
     }
@@ -302,8 +305,22 @@ export function isEmployeeNamespace(namespace: string): boolean {
 }
 
 /**
+ * Determine if a namespace is public.
+ */
+export function isPublicNamespace(namespace: string): boolean {
+  return namespace === NAMESPACE_PREFIXES.public;
+}
+
+/**
  * Get the namespace prefix for a strategy.
  */
 export function getNamespacePrefix(strategy: NamespaceStrategy): string {
   return NAMESPACE_PREFIXES[strategy];
+}
+
+/**
+ * Get the public namespace string.
+ */
+export function getPublicNamespace(): string {
+  return NAMESPACE_PREFIXES.public;
 }

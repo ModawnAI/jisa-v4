@@ -9,6 +9,7 @@ import { genericPdfProcessor } from './generic-pdf-processor';
 import { compensationExcelProcessor } from './compensation-excel-processor';
 import { mdrtExcelProcessor } from './mdrt-excel-processor';
 import { mdrtComprehensiveProcessor } from './mdrt-comprehensive-processor';
+import { publicDocumentProcessor } from './public-document-processor';
 import type {
   DocumentProcessor,
   DocumentForProcessing,
@@ -29,6 +30,7 @@ import type {
 const processorRegistry = new Map<string, DocumentProcessor>([
   ['mdrt_excel', mdrtExcelProcessor],
   ['compensation_excel', compensationExcelProcessor],
+  ['public_document', publicDocumentProcessor],
   ['generic_pdf', genericPdfProcessor],
 ]);
 
@@ -38,7 +40,8 @@ const processorRegistry = new Map<string, DocumentProcessor>([
  */
 const processorsByPriority: DocumentProcessor[] = [
   mdrtExcelProcessor,         // priority: 150 (MDRT/commission files)
-  compensationExcelProcessor, // priority: 100
+  compensationExcelProcessor, // priority: 100 (compensation/payroll)
+  publicDocumentProcessor,    // priority: 50 (public/everyone docs)
   genericPdfProcessor,        // priority: 0 (fallback)
 ];
 
@@ -322,6 +325,7 @@ export { GenericPdfProcessor } from './generic-pdf-processor';
 export { CompensationExcelProcessor } from './compensation-excel-processor';
 export { MdrtExcelProcessor } from './mdrt-excel-processor';
 export { MdrtComprehensiveProcessor } from './mdrt-comprehensive-processor';
+export { PublicDocumentProcessor } from './public-document-processor';
 
 // Re-export singleton instances
-export { genericPdfProcessor, compensationExcelProcessor, mdrtExcelProcessor, mdrtComprehensiveProcessor };
+export { genericPdfProcessor, compensationExcelProcessor, mdrtExcelProcessor, mdrtComprehensiveProcessor, publicDocumentProcessor };
