@@ -174,8 +174,8 @@ export async function POST(request: NextRequest) {
       // Check if message contains verification code pattern
       // Supports both formats:
       // - Admin codes: ABC-DEF-GHI-JKL (4 segments of 3 chars)
-      // - Employee codes: EMP-00124-673 (EMP + 5 digits + 3 chars)
-      const codePattern = /([A-Z]{3,4}-[A-Z0-9]{3,5}-[A-Z0-9]{3,5}(?:-[A-Z0-9]{3,5})?)/;
+      // - Employee codes: EMP-J00134-CDDR (EMP + employee_id up to 8 chars + 4 char suffix)
+      const codePattern = /([A-Z]{3,4}-[A-Z0-9]{3,8}-[A-Z0-9]{3,5}(?:-[A-Z0-9]{3,5})?)/;
       const codeMatch = userMessage.toUpperCase().match(codePattern);
 
       // No code in message - request code
@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
 처음 사용하시는 분은 관리자로부터 받은 인증 코드를 입력해주세요.
 
 코드 형식 예시:
-• 직원 코드: EMP-00124-673
+• 직원 코드: EMP-J00134-CDDR
 • 관리자 코드: HXK-9F2-M7Q-3WP
 
 인증 코드가 없으신가요?
