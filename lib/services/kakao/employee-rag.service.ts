@@ -41,8 +41,8 @@ function getPineconeClient(): Pinecone {
   return pineconeClient;
 }
 
-// Constants
-const INDEX_NAME = process.env.PINECONE_INDEX_NAME || process.env.PINECONE_INDEX || 'jisa-v4';
+// Constants - trim() to remove any accidental trailing whitespace/newlines in env vars
+const INDEX_NAME = (process.env.PINECONE_INDEX_NAME || process.env.PINECONE_INDEX || 'jisa-v4').trim();
 const RELEVANCE_THRESHOLD = 0.3;
 
 /**

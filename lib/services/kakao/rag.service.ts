@@ -43,8 +43,8 @@ function getPineconeClient(): Pinecone {
   return pineconeClient;
 }
 
-// Constants from environment
-const INDEX_NAME = process.env.PINECONE_INDEX_NAME || process.env.PINECONE_INDEX || 'jisa-v4';
+// Constants from environment - trim() to remove any accidental trailing whitespace/newlines
+const INDEX_NAME = (process.env.PINECONE_INDEX_NAME || process.env.PINECONE_INDEX || 'jisa-v4').trim();
 const NAMESPACE = process.env.KAKAO_RAG_NAMESPACE || 'kakao-chatbot';
 const PUBLIC_NAMESPACE = 'public'; // Public documents accessible to everyone
 const RELEVANCE_THRESHOLD = 0.3;
