@@ -7,6 +7,7 @@ export function generateOrgNamespace(organizationId: string): string {
 
 /**
  * Generate a Pinecone namespace for employee-specific documents
+ * @param employeeId - The employee's 사번 (sabon/employee code like "J00307"), NOT the UUID
  */
 export function generateEmployeeNamespace(employeeId: string): string {
   return `emp_${employeeId}`;

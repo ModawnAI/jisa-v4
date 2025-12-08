@@ -232,7 +232,7 @@ export const getIndex = () => {
 
 // Namespace conventions:
 // - Company documents: org_{organization_id}
-// - Employee-specific: emp_{employee_id}
+// - Employee-specific: emp_{sabon} (e.g., emp_J00307)
 ```
 
 ### 3. Verify Connection

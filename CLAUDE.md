@@ -88,7 +88,7 @@ hooks/
 
 **Dual Namespace Strategy (Pinecone)**
 - Company documents → `org_{organization_id}` namespace
-- Employee-specific → `emp_{employee_id}` namespace
+- Employee-specific → `emp_{sabon}` namespace (e.g., `emp_J00307`)
 - Clearance levels: `basic`, `standard`, `advanced`
 
 **Document Processing Flow**

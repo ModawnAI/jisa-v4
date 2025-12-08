@@ -34,6 +34,7 @@ export class NamespaceService {
 
   /**
    * Get employee namespace
+   * @param employeeId - The employee's 사번 (sabon/employee code like "J00307"), NOT the UUID
    */
   getEmployeeNamespace(employeeId: string): string {
     return `emp_${employeeId}`;

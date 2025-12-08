@@ -272,9 +272,9 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Generate pinecone namespace if not set but employee_id exists
+      // Generate pinecone namespace if not set but employee_code (sabon) exists
       const pineconeNamespace = verificationCode.pinecone_namespace ||
-        (verificationCode.employee_id ? `emp_${verificationCode.employee_id}` : null);
+        (verificationCode.employee_code ? `emp_${verificationCode.employee_code}` : null);
 
       // Use employee name if available, otherwise KakaoTalk nickname
       const displayName = employeeName || kakaoNickname;
