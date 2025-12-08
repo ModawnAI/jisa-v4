@@ -251,18 +251,45 @@ export async function POST(request: NextRequest) {
 
       console.log(`[KakaoTalk] Creating profile with role=${verificationCode.role}, tier=${verificationCode.tier}`);
 
+      // Fetch employee details if this is an employee code
+      let employeeName: string | null = null;
+      let employeeDepartment: string | null = null;
+      let employeePosition: string | null = null;
+
+      if (verificationCode.employee_id) {
+        const { data: employee } = await supabase
+          .from('employees')
+          .select('name, department, position')
+          .eq('id', verificationCode.employee_id)
+          .single();
+
+        if (employee) {
+          employeeName = employee.name;
+          employeeDepartment = employee.department;
+          employeePosition = employee.position;
+          console.log(`[KakaoTalk] Found employee: ${employeeName} (${employeeDepartment}/${employeePosition})`);
+        }
+      }
+
+      // Generate pinecone namespace if not set but employee_id exists
+      const pineconeNamespace = verificationCode.pinecone_namespace ||
+        (verificationCode.employee_id ? `emp_${verificationCode.employee_id}` : null);
+
+      // Use employee name if available, otherwise KakaoTalk nickname
+      const displayName = employeeName || kakaoNickname;
+
       // Create or update kakao_profiles directly (no auth user needed)
       const { data: newProfile, error: createError } = await supabase
         .from('kakao_profiles')
         .upsert({
           kakao_user_id: kakaoUserId,
-          display_name: kakaoNickname,
+          display_name: displayName,
           employee_id: verificationCode.employee_id || null,
           employee_sabon: verificationCode.employee_code || null,
           role: verificationCode.role,
           subscription_tier: verificationCode.tier,
-          pinecone_namespace: verificationCode.pinecone_namespace || null,
-          rag_enabled: !!verificationCode.pinecone_namespace,
+          pinecone_namespace: pineconeNamespace,
+          rag_enabled: !!pineconeNamespace,
           is_verified: true,
           verified_at: new Date().toISOString(),
           verified_with_code: code,
@@ -271,6 +298,8 @@ export async function POST(request: NextRequest) {
           metadata: {
             verification_code: code,
             verified_at: new Date().toISOString(),
+            employee_department: employeeDepartment,
+            employee_position: employeePosition,
           },
         }, {
           onConflict: 'kakao_user_id',
@@ -318,17 +347,16 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Get recipient name from verification code or profile
-      const recipientName = verificationCode.intended_recipient_name || newProfile.display_name || kakaoNickname;
-
       // Customize message for employees vs admins
-      const isEmployee = !!verificationCode.pinecone_namespace && !!verificationCode.employee_code;
+      const isEmployee = !!verificationCode.employee_id && !!verificationCode.employee_code;
 
       const welcomeText = isEmployee
         ? `인증 완료!
 
-이름: ${recipientName}
+이름: ${employeeName || displayName}
 사번: ${verificationCode.employee_code}
+부서: ${employeeDepartment || '-'}
+직급: ${employeePosition || '-'}
 역할: ${roleNames[verificationCode.role] || verificationCode.role}
 등급: ${tierNames[verificationCode.tier] || verificationCode.tier}
 
@@ -342,7 +370,7 @@ export async function POST(request: NextRequest) {
 본인 급여 정보 조회는 반드시 "/" 로 시작하세요!`
         : `인증 완료!
 
-이름: ${recipientName}
+이름: ${displayName}
 역할: ${roleNames[verificationCode.role] || verificationCode.role}
 등급: ${tierNames[verificationCode.tier] || verificationCode.tier}
 
