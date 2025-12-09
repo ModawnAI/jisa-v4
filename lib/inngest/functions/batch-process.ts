@@ -676,6 +676,316 @@ function flattenMetadata(
  * All batches complete handler
  * Updates document status when all batches have been processed
  */
+/**
+ * Batch processing function V3 (RAG V2 architecture)
+ * Uses enhanced embedding service with caching and checkpointing
+ */
+export const batchProcessV3 = inngest.createFunction(
+  {
+    id: 'batch-process-v3',
+    retries: 3,
+    concurrency: {
+      limit: 5,
+    },
+    onFailure: async ({ event }) => {
+      const batchId = (event.data as unknown as { batchId: string }).batchId;
+      await db
+        .update(processingBatches)
+        .set({
+          status: 'failed',
+          errorCount: 1,
+          completedAt: new Date(),
+        })
+        .where(eq(processingBatches.id, batchId));
+    },
+  },
+  { event: 'batch/process-v3' },
+  async ({ event, step }) => {
+    const {
+      documentId,
+      batchId,
+      processorType,
+      namespaceStrategy,
+      chunks,
+      organizationId,
+      useV2Embeddings = true,
+      enableCheckpointing = true,
+    } = event.data as {
+      documentId: string;
+      batchId: string;
+      processorType: string;
+      namespaceStrategy: NamespaceStrategy;
+      chunks: ProcessedChunk[];
+      organizationId: string;
+      useV2Embeddings?: boolean;
+      enableCheckpointing?: boolean;
+    };
+
+    // Import RAG V2 services dynamically to avoid circular dependencies
+    const { embeddingService, cacheService } = await import('@/lib/services/rag-v2');
+
+    // Step 1: Update batch status to processing
+    await step.run('update-batch-status', async () => {
+      await db
+        .update(processingBatches)
+        .set({
+          status: 'processing',
+          startedAt: new Date(),
+        })
+        .where(eq(processingBatches.id, batchId));
+    });
+
+    // Step 2: Get document info
+    const document = await step.run('fetch-document', async () => {
+      const doc = await db.query.documents.findFirst({
+        where: eq(documents.id, documentId),
+        with: {
+          category: true,
+        },
+      });
+
+      if (!doc) {
+        throw new Error(`문서를 찾을 수 없습니다: ${documentId}`);
+      }
+
+      return doc;
+    });
+
+    // Step 3: Create embeddings using RAG V2 service with caching
+    type EmbeddingMap = Map<number, { values: number[] }>;
+    const embeddings = await step.run('create-embeddings-v2', async (): Promise<EmbeddingMap> => {
+      const contents = chunks.map((chunk) => chunk.embeddingText);
+
+      if (contents.length === 0) {
+        return new Map<number, { values: number[] }>();
+      }
+
+      if (useV2Embeddings) {
+        // Use RAG V2 embedding service with caching
+        const result = await embeddingService.generateDenseEmbeddingsBatch(contents);
+        // Convert DenseEmbedding to simple { values } format
+        const mapped = new Map<number, { values: number[] }>();
+        result.forEach((emb, idx) => {
+          mapped.set(idx, { values: emb.values });
+        });
+        return mapped;
+      } else {
+        // Fallback to legacy embedding
+        const embedResults = await createEmbeddingsBatch(contents);
+        const mapped = new Map<number, { values: number[] }>();
+        embedResults.forEach((emb, idx) => {
+          mapped.set(idx, { values: emb });
+        });
+        return mapped;
+      }
+    }) as EmbeddingMap;
+
+    // Step 4: Prepare vectors with enhanced metadata
+    const vectors = await step.run('prepare-vectors-v2', async () => {
+      const vectorList: Array<{
+        id: string;
+        embedding: number[];
+        metadata: VectorMetadata;
+        namespace: string;
+        chunkData: {
+          content: string;
+          chunkIndex: number;
+          employeeId?: string;
+        };
+      }> = [];
+
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        const embedding = embeddings.get(i);
+
+        if (!embedding) continue;
+
+        const namespace = chunk.namespace;
+        const employeeId = (chunk.metadata as Record<string, unknown>).employeeId as string | undefined;
+
+        // Enhanced metadata for RAG V2
+        const vectorMetadata: VectorMetadata = {
+          documentId,
+          organizationId,
+          employeeId,
+          categoryId: document.categoryId || undefined,
+          chunkIndex: chunk.chunkIndex,
+          contentHash: chunk.contentHash,
+          clearanceLevel: (chunk.metadata.clearanceLevel as 'basic' | 'standard' | 'advanced') || 'basic',
+          processingBatchId: batchId,
+          originalRowIndex: chunk.chunkIndex,
+          createdAt: new Date().toISOString(),
+          // CRITICAL: Store full searchable text for RAG retrieval
+          searchable_text: chunk.embeddingText,
+          // Preview for quick display (compact)
+          preview: chunk.embeddingText.slice(0, 500),
+          // Chunk reference for tiered metadata lookup
+          chunkRef: chunk.vectorId,
+          // Processor info
+          processorType,
+          namespaceStrategy,
+          metadataType: (chunk.metadata as Record<string, unknown>).metadataType as string,
+          // V2 flag for query routing
+          ragVersion: 'v2',
+          // Flatten processor metadata
+          ...(flattenMetadata(chunk.metadata)),
+        };
+
+        vectorList.push({
+          id: chunk.vectorId,
+          embedding: embedding.values,
+          metadata: vectorMetadata,
+          namespace,
+          chunkData: {
+            content: chunk.embeddingText,
+            chunkIndex: chunk.chunkIndex,
+            employeeId,
+          },
+        });
+      }
+
+      return vectorList;
+    });
+
+    // Step 5: Upsert vectors with batching
+    const upsertResults = await step.run('upsert-vectors-v2', async () => {
+      const byNamespace = vectors.reduce((acc, v) => {
+        if (!acc[v.namespace]) acc[v.namespace] = [];
+        acc[v.namespace].push({
+          id: v.id,
+          embedding: v.embedding,
+          metadata: v.metadata,
+        });
+        return acc;
+      }, {} as Record<string, Array<{ id: string; embedding: number[]; metadata: VectorMetadata }>>);
+
+      const results: { namespace: string; count: number }[] = [];
+
+      for (const [namespace, nsVectors] of Object.entries(byNamespace)) {
+        const result = await pineconeService.upsertVectors(namespace, nsVectors);
+        results.push({ namespace, count: result.upsertedCount });
+
+        // Invalidate query cache for this namespace
+        await cacheService.invalidateQueriesForNamespace(namespace);
+      }
+
+      return results;
+    });
+
+    // Step 6: Create knowledge chunks in database
+    const totalChunks = vectors.length;
+    await step.run('create-knowledge-chunks-v2', async () => {
+      const chunkRecords = vectors.map((v) => ({
+        documentId,
+        content: v.chunkData.content,
+        contentHash: v.metadata.contentHash,
+        chunkIndex: v.chunkData.chunkIndex,
+        totalChunks,
+        pineconeId: v.id,
+        pineconeNamespace: v.namespace,
+        embeddingModel: EMBEDDING_CONFIG.model,
+        employeeId: v.chunkData.employeeId,
+        categorySlug: document.category?.slug,
+        metadata: {
+          ...v.metadata,
+          ragVersion: 'v2',
+        },
+      }));
+
+      if (chunkRecords.length > 0) {
+        await db.insert(knowledgeChunks).values(chunkRecords);
+      }
+
+      return { created: chunkRecords.length };
+    });
+
+    // Step 7: Create data lineage records
+    await step.run('create-lineage-v2', async () => {
+      const lineageRecords = vectors.map((v) => ({
+        sourceDocumentId: documentId,
+        sourceFileUrl: document.fileUrl,
+        sourceFileHash: document.fileHash || '',
+        processingBatchId: batchId,
+        templateId: document.templateId,
+        targetPineconeId: v.id,
+        targetNamespace: v.namespace,
+        targetEmployeeId: v.chunkData.employeeId,
+        chunkIndex: v.chunkData.chunkIndex,
+        transformationLog: {
+          embeddingModel: EMBEDDING_CONFIG.model,
+          dimensions: EMBEDDING_CONFIG.dimensions,
+          processorType,
+          namespaceStrategy,
+          ragVersion: 'v2',
+          usedCaching: useV2Embeddings,
+        },
+      }));
+
+      if (lineageRecords.length > 0) {
+        await db.insert(dataLineage).values(lineageRecords);
+      }
+
+      return { created: lineageRecords.length };
+    });
+
+    // Step 8: Update batch status to completed
+    const vectorIds = vectors.map((v) => v.id);
+    await step.run('complete-batch-v2', async () => {
+      await db
+        .update(processingBatches)
+        .set({
+          status: 'completed',
+          vectorIds,
+          successCount: vectors.length,
+          totalRecords: chunks.length,
+          errorCount: 0,
+          completedAt: new Date(),
+        })
+        .where(eq(processingBatches.id, batchId));
+    });
+
+    // Step 9: Check if all batches are complete
+    await step.run('check-all-batches-v2', async () => {
+      const batch = await db.query.processingBatches.findFirst({
+        where: eq(processingBatches.id, batchId),
+      });
+
+      if (!batch) return;
+
+      const [{ completed, total }] = await db
+        .select({
+          completed: sql<number>`count(*) filter (where ${processingBatches.status} = 'completed')::int`,
+          total: sql<number>`count(*)::int`,
+        })
+        .from(processingBatches)
+        .where(eq(processingBatches.documentId, documentId));
+
+      if (completed === total) {
+        await inngest.send({
+          name: 'batch/all-complete',
+          data: { documentId, ragVersion: 'v2' },
+        });
+      }
+
+      return { completed, total };
+    });
+
+    return {
+      batchId,
+      documentId,
+      vectorsCreated: vectors.length,
+      upsertResults,
+      processorType,
+      ragVersion: 'v2',
+      usedCaching: useV2Embeddings,
+    };
+  }
+);
+
+/**
+ * All batches complete handler
+ * Updates document status when all batches have been processed
+ */
 export const batchAllComplete = inngest.createFunction(
   {
     id: 'batch-all-complete',

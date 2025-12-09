@@ -55,6 +55,18 @@ type Events = {
       organizationId: string;
     };
   };
+  'batch/process-v3': {
+    data: {
+      documentId: string;
+      batchId: string;
+      processorType: string;
+      namespaceStrategy: NamespaceStrategy;
+      chunks: ProcessedChunk[];
+      organizationId: string;
+      useV2Embeddings?: boolean;
+      enableCheckpointing?: boolean;
+    };
+  };
   'batch/all-complete': {
     data: {
       documentId: string;

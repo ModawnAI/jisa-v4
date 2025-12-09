@@ -1,0 +1,2238 @@
+{
+  "id": "eval-1765251374744",
+  "name": "RAG Evaluation 2025-12-09",
+  "description": "Comprehensive RAG evaluation with 1 test suites",
+  "suiteResults": [
+    {
+      "suite": {
+        "id": "mdrt-calculation",
+        "name": "MDRT Calculation Tests",
+        "description": "Tests for MDRT qualification calculations and gap analysis",
+        "category": "mdrt_calculation",
+        "testCases": [
+          {
+            "id": "MDRT001",
+            "category": "mdrt_calculation",
+            "difficulty": "medium",
+            "name": "MDRT eligibility - Commission basis",
+            "description": "Check if employee meets MDRT commission requirement",
+            "query": "J00134 MDRT 커미션 기준 달성했어?",
+            "queryVariants": [
+              "J00134 MDRT 됐어?",
+              "J00134 MDRT 자격 있어?",
+              "134 MDRT 충족?"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "boolean",
+              "expected": false
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134].commission.total",
+              "transform": "compareToMdrt"
+            },
+            "metadata": {
+              "notes": "MDRT 2026 commission requirement: 122,455,000원"
+            }
+          },
+          {
+            "id": "MDRT002",
+            "category": "mdrt_calculation",
+            "difficulty": "medium",
+            "name": "MDRT eligibility - Income basis",
+            "description": "Check if employee meets MDRT income requirement",
+            "query": "J00307 MDRT 총수입 기준 충족해?",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "boolean",
+              "expected": false
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00307].totalIncome.total",
+              "transform": "compareToMdrtIncome"
+            },
+            "metadata": {
+              "notes": "MDRT 2026 income requirement: 244,910,000원"
+            }
+          },
+          {
+            "id": "MDRT003",
+            "category": "mdrt_calculation",
+            "difficulty": "easy",
+            "name": "Simple MDRT status query",
+            "description": "Check MDRT status with simple query",
+            "query": "나 MDRT 되나?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "달성",
+                "미달",
+                "충족",
+                "부족",
+                "MDRT"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134]"
+            }
+          },
+          {
+            "id": "MDRT010",
+            "category": "mdrt_calculation",
+            "difficulty": "hard",
+            "name": "MDRT gap calculation - Commission",
+            "description": "Calculate remaining amount needed for MDRT (commission)",
+            "query": "J00134 MDRT 커미션 얼마 더 필요해?",
+            "queryVariants": [
+              "J00134 MDRT 부족금액",
+              "134 MDRT 얼마 모자라?",
+              "J00134 MDRT 남은 금액"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "calculation",
+              "expected": 0,
+              "tolerance": 0.05,
+              "formula": "MDRT_REQUIREMENT - employee.commission.total"
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134].commission.total",
+              "transform": "mdrtGap"
+            }
+          },
+          {
+            "id": "MDRT011",
+            "category": "mdrt_calculation",
+            "difficulty": "hard",
+            "name": "MDRT gap calculation - Income",
+            "description": "Calculate remaining amount needed for MDRT (income)",
+            "query": "J00307 MDRT 총수입 기준 부족금액 알려줘",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "calculation",
+              "expected": 0,
+              "tolerance": 0.05,
+              "formula": "MDRT_INCOME_REQUIREMENT - employee.totalIncome.total"
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00307].totalIncome.total",
+              "transform": "mdrtIncomeGap"
+            }
+          },
+          {
+            "id": "MDRT012",
+            "category": "mdrt_calculation",
+            "difficulty": "medium",
+            "name": "MDRT achievement rate",
+            "description": "Calculate MDRT achievement percentage",
+            "query": "J00134 MDRT 달성률 몇 퍼센트야?",
+            "queryVariants": [
+              "J00134 MDRT 몇 % 달성?",
+              "134 MDRT 진척률"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "calculation",
+              "expected": 0,
+              "tolerance": 0.05,
+              "formula": "(employee.commission.total / MDRT_REQUIREMENT) * 100"
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134].commission.total",
+              "transform": "mdrtRate"
+            }
+          },
+          {
+            "id": "MDRT020",
+            "category": "mdrt_calculation",
+            "difficulty": "hard",
+            "name": "COT eligibility check",
+            "description": "Check if employee meets COT (3x MDRT) requirement",
+            "query": "J00134 COT 자격 있어?",
+            "queryVariants": [
+              "J00134 COT 되나?",
+              "134 COT 충족?"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "boolean",
+              "expected": false
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134].commission.total",
+              "transform": "compareToCot"
+            },
+            "metadata": {
+              "notes": "COT requirement: 367,365,000원 (3x MDRT)"
+            }
+          },
+          {
+            "id": "MDRT021",
+            "category": "mdrt_calculation",
+            "difficulty": "hard",
+            "name": "COT gap calculation",
+            "description": "Calculate remaining amount for COT",
+            "query": "J00307 COT 얼마 더 필요해?",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "calculation",
+              "expected": 0,
+              "tolerance": 0.05,
+              "formula": "COT_REQUIREMENT - employee.commission.total"
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00307].commission.total",
+              "transform": "cotGap"
+            }
+          },
+          {
+            "id": "MDRT022",
+            "category": "mdrt_calculation",
+            "difficulty": "medium",
+            "name": "COT achievement rate",
+            "description": "Calculate COT achievement percentage",
+            "query": "J00134 COT 달성률?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "calculation",
+              "expected": 0,
+              "tolerance": 0.05,
+              "formula": "(employee.commission.total / COT_REQUIREMENT) * 100"
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134].commission.total",
+              "transform": "cotRate"
+            }
+          },
+          {
+            "id": "MDRT030",
+            "category": "mdrt_calculation",
+            "difficulty": "hard",
+            "name": "TOT eligibility check",
+            "description": "Check if employee meets TOT (6x MDRT) requirement",
+            "query": "J00134 TOT 자격 가능해?",
+            "queryVariants": [
+              "J00134 TOT 되나?",
+              "J00134 탑오브더테이블"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "boolean",
+              "expected": false
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134].commission.total",
+              "transform": "compareToTot"
+            },
+            "metadata": {
+              "notes": "TOT requirement: 734,730,000원 (6x MDRT)"
+            }
+          },
+          {
+            "id": "MDRT031",
+            "category": "mdrt_calculation",
+            "difficulty": "expert",
+            "name": "TOT gap calculation",
+            "description": "Calculate remaining amount for TOT",
+            "query": "J00307 TOT까지 얼마나 남았어?",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "calculation",
+              "expected": 0,
+              "tolerance": 0.05,
+              "formula": "TOT_REQUIREMENT - employee.commission.total"
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00307].commission.total",
+              "transform": "totGap"
+            }
+          },
+          {
+            "id": "MDRT040",
+            "category": "mdrt_calculation",
+            "difficulty": "expert",
+            "name": "Best path to MDRT",
+            "description": "Determine whether commission or income path is closer",
+            "query": "J00134 MDRT 달성하려면 커미션이 나아 총수입이 나아?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "커미션",
+                "총수입"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134]",
+              "transform": "bestMdrtPath"
+            }
+          },
+          {
+            "id": "MDRT041",
+            "category": "mdrt_calculation",
+            "difficulty": "expert",
+            "name": "MDRT projection",
+            "description": "Project if MDRT can be achieved by year end",
+            "query": "J00307 이번 달 추세로 연말까지 MDRT 가능해?",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "가능",
+                "어려",
+                "달성",
+                "예상"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00307]",
+              "transform": "projectMdrt"
+            }
+          },
+          {
+            "id": "MDRT050",
+            "category": "mdrt_calculation",
+            "difficulty": "easy",
+            "name": "MDRT requirement lookup",
+            "description": "Look up MDRT commission requirement",
+            "query": "MDRT 커미션 기준이 얼마야?",
+            "queryVariants": [
+              "MDRT 요건",
+              "MDRT 자격 금액",
+              "2026년 MDRT 기준"
+            ],
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 122455000,
+              "tolerance": 0.01
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "mdrtStandards.requirements.commission"
+            }
+          },
+          {
+            "id": "MDRT051",
+            "category": "mdrt_calculation",
+            "difficulty": "easy",
+            "name": "MDRT income requirement lookup",
+            "description": "Look up MDRT income requirement",
+            "query": "MDRT 총수입 기준은?",
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 244910000,
+              "tolerance": 0.01
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "mdrtStandards.requirements.income"
+            }
+          },
+          {
+            "id": "MDRT052",
+            "category": "mdrt_calculation",
+            "difficulty": "easy",
+            "name": "COT requirement lookup",
+            "description": "Look up COT commission requirement",
+            "query": "COT 기준 금액 알려줘",
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 367365000,
+              "tolerance": 0.01
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "mdrtStandards.cot.commission"
+            }
+          },
+          {
+            "id": "MDRT053",
+            "category": "mdrt_calculation",
+            "difficulty": "easy",
+            "name": "TOT requirement lookup",
+            "description": "Look up TOT commission requirement",
+            "query": "TOT 커미션 기준은?",
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 734730000,
+              "tolerance": 0.01
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "mdrtStandards.tot.commission"
+            }
+          },
+          {
+            "id": "MDRT060",
+            "category": "mdrt_calculation",
+            "difficulty": "medium",
+            "name": "Informal MDRT query",
+            "description": "Handle casual MDRT query",
+            "query": "나 MDRT 될까?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "MDRT",
+                "달성",
+                "부족",
+                "필요"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134]"
+            }
+          },
+          {
+            "id": "MDRT061",
+            "category": "mdrt_calculation",
+            "difficulty": "medium",
+            "name": "Very informal MDRT gap query",
+            "description": "Handle very casual query style",
+            "query": "MDRT 얼마 모자라",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 0,
+              "tolerance": 0.1
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134].commission.total",
+              "transform": "mdrtGap"
+            }
+          },
+          {
+            "id": "MDRT070",
+            "category": "mdrt_calculation",
+            "difficulty": "expert",
+            "name": "MDRT 보장성금액 contribution",
+            "description": "Calculate how 보장성금액 contributes to MDRT",
+            "query": "J00134 보장성금액이 MDRT 달성에 얼마나 기여해?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "calculation",
+              "expected": 0,
+              "tolerance": 0.1
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].commission.保障性금액"
+            }
+          },
+          {
+            "id": "MDRT071",
+            "category": "mdrt_calculation",
+            "difficulty": "expert",
+            "name": "MDRT with 보장성금액 only",
+            "description": "Check if 보장성금액 alone meets MDRT",
+            "query": "J00307 보장성금액만으로 MDRT 될 수 있어?",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "boolean",
+              "expected": false
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00307].commission.保障性금액"
+            }
+          }
+        ]
+      },
+      "results": [
+        {
+          "testCase": {
+            "id": "MDRT001",
+            "category": "mdrt_calculation",
+            "difficulty": "medium",
+            "name": "MDRT eligibility - Commission basis",
+            "description": "Check if employee meets MDRT commission requirement",
+            "query": "J00134 MDRT 커미션 기준 달성했어?",
+            "queryVariants": [
+              "J00134 MDRT 됐어?",
+              "J00134 MDRT 자격 있어?",
+              "134 MDRT 충족?"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "boolean",
+              "expected": false
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134].commission.total",
+              "transform": "compareToMdrt"
+            },
+            "metadata": {
+              "notes": "MDRT 2026 commission requirement: 122,455,000원"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "J00134 설계사님의 2025 회계연도 MDRT 커미션 기준 달성 현황을 확인했습니다.\n\n최신 데이터 업데이트 기준(2025년 10월)으로 볼 때, 아직 MDRT 커미션 기준을 완전히 달성하지는 못하셨습니다. 현재 누적 실적 상세 현황은 다음과 같습니다.\n\nFYC(First Year Commission) MDRT 진행률: 64%\n누적 신계약수입(FYC): 45,272,186원\n\nAGI(Agency Gross Income) MDRT 진행률: 39.3%\n누적 총수입(AGI): 48,169,867원\n\nFYC는 64%로 순조롭게 진행 중이지만, AGI 기준 진행률이 39.3%로 상대적으로 낮습니다. 남은 기간 동안 AGI 기준 충족을 위해 총수입 증대에 집중해 주시면 목표 달성에 도움이 될 것입니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "mdrt",
+              "confidence": 0.95,
+              "processingTime": 14315
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "boolean",
+                  "expected": false
+                },
+                "actualValue": "J00134 설계사님의 2025 회계연도 MDRT 커미션 기준 달성 현황을 확인했습니다.\n\n최신 데이터 업데이트 기준(2025년 10월)으로 볼 때, 아직 MDRT 커미션 기준을 완전히 달성하지는 못하셨습니다. 현재 누적 실적 상세 현황은 다음과 같습니다.\n\nFYC(First Year Commission) MDRT 진행률: 64%\n누적 신계약수입(FYC): 45,272,186원\n\nAGI(Agency Gross Income) MDRT 진행률: 39.3%\n누적 총수입(AGI): 48,169,867원\n\nFYC는 64%로 순조롭게 진행 중이지만, AGI 기준 진행률이 39.3%로 상대적으로 낮습니다. 남은 기간 동안 AGI 기준 충족을 위해 총수입 증대에 집중해 주시면 목표 달성에 도움이 될 것입니다.",
+                "passed": false,
+                "reason": "Boolean mismatch: expected false, response suggests positive"
+              }
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 15399,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:31:49.821Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT002",
+            "category": "mdrt_calculation",
+            "difficulty": "medium",
+            "name": "MDRT eligibility - Income basis",
+            "description": "Check if employee meets MDRT income requirement",
+            "query": "J00307 MDRT 총수입 기준 충족해?",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "boolean",
+              "expected": false
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00307].totalIncome.total",
+              "transform": "compareToMdrtIncome"
+            },
+            "metadata": {
+              "notes": "MDRT 2026 income requirement: 244,910,000원"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "J00307 설계사님의 2025년 11월(누적) 기준 MDRT 총수입(AGI) 기준 충족 여부를 확인한 결과, **현재 기준을 충족하지 못했습니다.**\n\n구체적인 내용은 다음과 같습니다.\n\n*   **조회 기간:** 2025년 11월 누적 데이터 기준\n*   **총수입 (누적):** -₩4,561,145원\n*   **AGI MDRT 진행률:** -3.7%\n\n**진행 상황 설명:**\n\n현재까지 누적된 총수입이 마이너스 4백만 원대이며, AGI MDRT 진행률 역시 매우 저조한(-3.7%) 상태입니다. 이는 수입 기준 충족을 위해 달성해야 할 금액에 크게 미달하고 있음을 의미합니다.\n\nFYC(신계약수입) 기준 진행률도 0.6%로 매우 낮습니다.\n\n회계연도 마감이 임박한 시점임을 고려할 때, 총수입 기준을 충족시키기 위해서는 수입 발생 구조에 대한 즉각적인 점검과 목표 달성을 위한 적극적인 활동 계획 수립이 필요합니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00307_chunk_284"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "mdrt",
+              "confidence": 0.95,
+              "processingTime": 13226
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "boolean",
+                  "expected": false
+                },
+                "actualValue": "J00307 설계사님의 2025년 11월(누적) 기준 MDRT 총수입(AGI) 기준 충족 여부를 확인한 결과, **현재 기준을 충족하지 못했습니다.**\n\n구체적인 내용은 다음과 같습니다.\n\n*   **조회 기간:** 2025년 11월 누적 데이터 기준\n*   **총수입 (누적):** -₩4,561,145원\n*   **AGI MDRT 진행률:** -3.7%\n\n**진행 상황 설명:**\n\n현재까지 누적된 총수입이 마이너스 4백만 원대이며, AGI MDRT 진행률 역시 매우 저조한(-3.7%) 상태입니다. 이는 수입 기준 충족을 위해 달성해야 할 금액에 크게 미달하고 있음을 의미합니다.\n\nFYC(신계약수입) 기준 진행률도 0.6%로 매우 낮습니다.\n\n회계연도 마감이 임박한 시점임을 고려할 때, 총수입 기준을 충족시키기 위해서는 수입 발생 구조에 대한 즉각적인 점검과 목표 달성을 위한 적극적인 활동 계획 수립이 필요합니다.",
+                "passed": false,
+                "reason": "Boolean mismatch: expected false, response suggests positive"
+              }
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00307_chunk_284",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 13245,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:32:03.167Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT003",
+            "category": "mdrt_calculation",
+            "difficulty": "easy",
+            "name": "Simple MDRT status query",
+            "description": "Check MDRT status with simple query",
+            "query": "나 MDRT 되나?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "달성",
+                "미달",
+                "충족",
+                "부족",
+                "MDRT"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134]"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "설계사님의 MDRT 달성 현황을 조회해 드립니다.\n\n최신 데이터는 2025년 회계연도 10월 마감 기준으로 확인되었습니다.\n\n현재 FYC(신계약수입) 기준 MDRT 진행률은 64%를 기록하고 계십니다. 누적된 신계약수입 금액은 총 45,272,186원입니다.\n\n현재까지의 실적을 기준으로 볼 때 MDRT 목표 금액의 약 36% 정도가 추가로 필요하신 상황입니다.\n\n남은 기간 동안 목표 달성을 위해 필요한 추가 실적에 집중하신다면 충분히 MDRT 달성이 가능하실 것으로 예상됩니다. 꾸준히 목표 관리를 지속하시기를 바랍니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "mdrt",
+              "confidence": 0.95,
+              "processingTime": 11527
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": [],
+                  "containsAny": [
+                    "달성",
+                    "미달",
+                    "충족",
+                    "부족",
+                    "MDRT"
+                  ]
+                },
+                "actualValue": "설계사님의 MDRT 달성 현황을 조회해 드립니다.\n\n최신 데이터는 2025년 회계연도 10월 마감 기준으로 확인되었습니다.\n\n현재 FYC(신계약수입) 기준 MDRT 진행률은 64%를 기록하고 계십니다. 누적된 신계약수입 금액은 총 45,272,186원입니다.\n\n현재까지의 실적을 기준으로 볼 때 MDRT 목표 금액의 약 36% 정도가 추가로 필요하신 상황입니다.\n\n남은 기간 동안 목표 달성을 위해 필요한 추가 실적에 집중하신다면 충분히 MDRT 달성이 가능하실 것으로 예상됩니다. 꾸준히 목표 관리를 지속하시기를 바랍니다.",
+                "passed": true,
+                "reason": "Contains all required terms: "
+              },
+              "containsRequired": true
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 11548,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:32:14.817Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT010",
+            "category": "mdrt_calculation",
+            "difficulty": "hard",
+            "name": "MDRT gap calculation - Commission",
+            "description": "Calculate remaining amount needed for MDRT (commission)",
+            "query": "J00134 MDRT 커미션 얼마 더 필요해?",
+            "queryVariants": [
+              "J00134 MDRT 부족금액",
+              "134 MDRT 얼마 모자라?",
+              "J00134 MDRT 남은 금액"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "calculation",
+              "expected": 0,
+              "tolerance": 0.05,
+              "formula": "MDRT_REQUIREMENT - employee.commission.total"
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134].commission.total",
+              "transform": "mdrtGap"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "J00134 설계사님의 MDRT 커미션 목표 달성 현황에 대해 안내해 드리겠습니다.\n\nMDRT 목표 달성을 위한 총 커미션 금액은 54,000,000원입니다.\n\n현재 MDRT 커미션 실적 인정액은 0원으로 계산되어, 달성률은 0.0%입니다.\n\n따라서 MDRT 목표를 달성하시기 위해 추가로 필요한 커미션 금액은 54,000,000원입니다.\n\n(참고: 2025년 11월 데이터 기준 FYC MDRT 진행률은 64%로 기록하고 계십니다.)",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "calculation",
+              "template": "mdrt",
+              "calculationResult": {
+                "current": 0,
+                "target": 54000000,
+                "gap": 54000000,
+                "progress": 0,
+                "achieved": 0
+              },
+              "confidence": 0.95,
+              "processingTime": 14456
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "calculation",
+                  "expected": 0,
+                  "tolerance": 0.05,
+                  "formula": "MDRT_REQUIREMENT - employee.commission.total"
+                },
+                "actualValue": "J00134 설계사님의 MDRT 커미션 목표 달성 현황에 대해 안내해 드리겠습니다.\n\nMDRT 목표 달성을 위한 총 커미션 금액은 54,000,000원입니다.\n\n현재 MDRT 커미션 실적 인정액은 0원으로 계산되어, 달성률은 0.0%입니다.\n\n따라서 MDRT 목표를 달성하시기 위해 추가로 필요한 커미션 금액은 54,000,000원입니다.\n\n(참고: 2025년 11월 데이터 기준 FYC MDRT 진행률은 64%로 기록하고 계십니다.)",
+                "passed": false,
+                "reason": "Calculation incorrect: expected 0, got 134"
+              },
+              "numericAccuracy": -133
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 14476,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:32:29.394Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT011",
+            "category": "mdrt_calculation",
+            "difficulty": "hard",
+            "name": "MDRT gap calculation - Income",
+            "description": "Calculate remaining amount needed for MDRT (income)",
+            "query": "J00307 MDRT 총수입 기준 부족금액 알려줘",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "calculation",
+              "expected": 0,
+              "tolerance": 0.05,
+              "formula": "MDRT_INCOME_REQUIREMENT - employee.totalIncome.total"
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00307].totalIncome.total",
+              "transform": "mdrtIncomeGap"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "J00307 설계사님의 MDRT 총수입(Total Income) 기준 부족 금액에 대해 안내해 드리겠습니다.\n\n**MDRT 총수입 기준 부족 금액**\n\n현재 MDRT 총수입 기준 목표액은 ₩54,000,000입니다.\n\n1.  **현재 실적 (Total Income 기준):** ₩0\n2.  **MDRT 목표 금액:** ₩54,000,000\n3.  **달성률:** 0.0%\n\n현재 총수입 기준 목표 달성을 위해 필요한 부족 금액은 **₩54,000,000**입니다.\n\n현재까지는 목표가 미달성 상태이므로, 남은 기간 동안 실적 증대를 위한 계획 수립이 필요해 보입니다.</blockquote>",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00307_chunk_284"
+            ],
+            "metadata": {
+              "intent": "calculation",
+              "template": "mdrt",
+              "calculationResult": {
+                "current": 0,
+                "target": 54000000,
+                "gap": 54000000,
+                "progress": 0,
+                "achieved": 0
+              },
+              "confidence": 0.95,
+              "processingTime": 13162
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "calculation",
+                  "expected": 0,
+                  "tolerance": 0.05,
+                  "formula": "MDRT_INCOME_REQUIREMENT - employee.totalIncome.total"
+                },
+                "actualValue": "J00307 설계사님의 MDRT 총수입(Total Income) 기준 부족 금액에 대해 안내해 드리겠습니다.\n\n**MDRT 총수입 기준 부족 금액**\n\n현재 MDRT 총수입 기준 목표액은 ₩54,000,000입니다.\n\n1.  **현재 실적 (Total Income 기준):** ₩0\n2.  **MDRT 목표 금액:** ₩54,000,000\n3.  **달성률:** 0.0%\n\n현재 총수입 기준 목표 달성을 위해 필요한 부족 금액은 **₩54,000,000**입니다.\n\n현재까지는 목표가 미달성 상태이므로, 남은 기간 동안 실적 증대를 위한 계획 수립이 필요해 보입니다.</blockquote>",
+                "passed": false,
+                "reason": "Calculation incorrect: expected 0, got 307"
+              },
+              "numericAccuracy": -306
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00307_chunk_284",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 13188,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:32:42.683Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT012",
+            "category": "mdrt_calculation",
+            "difficulty": "medium",
+            "name": "MDRT achievement rate",
+            "description": "Calculate MDRT achievement percentage",
+            "query": "J00134 MDRT 달성률 몇 퍼센트야?",
+            "queryVariants": [
+              "J00134 MDRT 몇 % 달성?",
+              "134 MDRT 진척률"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "calculation",
+              "expected": 0,
+              "tolerance": 0.05,
+              "formula": "(employee.commission.total / MDRT_REQUIREMENT) * 100"
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134].commission.total",
+              "transform": "mdrtRate"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "J00134 설계사님의 MDRT 달성률을 확인해 드립니다.\n\n최신 데이터인 2025년 11월 기준으로 확인했을 때,\n\nFYC 기준 MDRT 달성률은 64%입니다.\n현재까지 누적된 신계약수입(FYC)은 45,272,186원입니다.\n\n참고로 AGI 기준으로 확인 시, AGI MDRT 진행률은 39.3%이며 누적 총수입은 48,169,867원입니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "mdrt",
+              "confidence": 0.95,
+              "processingTime": 11337
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "calculation",
+                  "expected": 0,
+                  "tolerance": 0.05,
+                  "formula": "(employee.commission.total / MDRT_REQUIREMENT) * 100"
+                },
+                "actualValue": "J00134 설계사님의 MDRT 달성률을 확인해 드립니다.\n\n최신 데이터인 2025년 11월 기준으로 확인했을 때,\n\nFYC 기준 MDRT 달성률은 64%입니다.\n현재까지 누적된 신계약수입(FYC)은 45,272,186원입니다.\n\n참고로 AGI 기준으로 확인 시, AGI MDRT 진행률은 39.3%이며 누적 총수입은 48,169,867원입니다.",
+                "passed": false,
+                "reason": "Calculation incorrect: expected 0, got 134"
+              },
+              "numericAccuracy": -133
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 11361,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:32:54.146Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT020",
+            "category": "mdrt_calculation",
+            "difficulty": "hard",
+            "name": "COT eligibility check",
+            "description": "Check if employee meets COT (3x MDRT) requirement",
+            "query": "J00134 COT 자격 있어?",
+            "queryVariants": [
+              "J00134 COT 되나?",
+              "134 COT 충족?"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "boolean",
+              "expected": false
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134].commission.total",
+              "transform": "compareToCot"
+            },
+            "metadata": {
+              "notes": "COT requirement: 367,365,000원 (3x MDRT)"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "J00134 설계사님의 COT 자격 달성 여부에 대해 현재 데이터를 기준으로 확인해 드립니다.\n\n현재 J00134 설계사님은 COT(Court of the Table) 자격을 달성하지 못하셨습니다.\n\nCOT는 MDRT 자격 기준의 3배를 충족해야 달성할 수 있습니다. 현재 설계사님은 MDRT 달성 목표 대비 **64%**를 진행 중이십니다.\n\n자세한 MDRT 진행 현황은 다음과 같습니다.\n\n*   **기준 시점:** 2025년 11월\n*   **FYC MDRT 진행률:** 64%\n*   **AGI MDRT 진행률:** 39.3%\n*   **신계약수입 (FYC 누적액):** ₩45,272,186\n\n2025년 MDRT 자격 달성을 위해서는 남은 기간 동안 목표 진척률 100%를 달성하시는 데 집중하시기를 권해 드립니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "mdrt",
+              "confidence": 0.98,
+              "processingTime": 13924
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "boolean",
+                  "expected": false
+                },
+                "actualValue": "J00134 설계사님의 COT 자격 달성 여부에 대해 현재 데이터를 기준으로 확인해 드립니다.\n\n현재 J00134 설계사님은 COT(Court of the Table) 자격을 달성하지 못하셨습니다.\n\nCOT는 MDRT 자격 기준의 3배를 충족해야 달성할 수 있습니다. 현재 설계사님은 MDRT 달성 목표 대비 **64%**를 진행 중이십니다.\n\n자세한 MDRT 진행 현황은 다음과 같습니다.\n\n*   **기준 시점:** 2025년 11월\n*   **FYC MDRT 진행률:** 64%\n*   **AGI MDRT 진행률:** 39.3%\n*   **신계약수입 (FYC 누적액):** ₩45,272,186\n\n2025년 MDRT 자격 달성을 위해서는 남은 기간 동안 목표 진척률 100%를 달성하시는 데 집중하시기를 권해 드립니다.",
+                "passed": false,
+                "reason": "Boolean mismatch: expected false, response suggests positive"
+              }
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 13943,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:33:08.189Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT021",
+            "category": "mdrt_calculation",
+            "difficulty": "hard",
+            "name": "COT gap calculation",
+            "description": "Calculate remaining amount for COT",
+            "query": "J00307 COT 얼마 더 필요해?",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "calculation",
+              "expected": 0,
+              "tolerance": 0.05,
+              "formula": "COT_REQUIREMENT - employee.commission.total"
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00307].commission.total",
+              "transform": "cotGap"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "J00307 설계사님의 COT(Court of the Table) 달성 금액을 기준으로 계산해 드리겠습니다. COT 자격은 일반 MDRT 목표 금액의 3배 실적이 필요합니다.\n\n검색된 2025 회계연도 데이터를 기반으로 산출된 결과입니다.\n\n1. **COT 목표 금액 (3x MDRT)**\n   *   일반 MDRT 목표: ₩54,000,000\n   *   COT 목표 금액: ₩162,000,000\n\n2. **현재 MDRT 인정 실적**\n   *   현재 실적: ₩0\n   *   *참고: 누적 신계약 수입은 ₩447,592로 기록되어 있으나, MDRT 인정 계산 결과는 ₩0으로 반영되었습니다.*\n\n3. **COT 달성을 위해 더 필요한 금액**\n   *   COT 목표 달성을 위해서는 **₩162,000,000**이 추가로 필요합니다.\n\n현재 진행률은 FYC MDRT 진행률 기준으로 0.6% 수준입니다. 자격 달성까지 남은 기간 동안 효율적인 영업 활동을 통해 목표를 달성하시기를 응원합니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00307_chunk_284"
+            ],
+            "metadata": {
+              "intent": "calculation",
+              "template": "mdrt",
+              "calculationResult": {
+                "current": 0,
+                "target": 54000000,
+                "gap": 54000000,
+                "progress": 0,
+                "achieved": 0
+              },
+              "confidence": 0.95,
+              "processingTime": 14856
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "calculation",
+                  "expected": 0,
+                  "tolerance": 0.05,
+                  "formula": "COT_REQUIREMENT - employee.commission.total"
+                },
+                "actualValue": "J00307 설계사님의 COT(Court of the Table) 달성 금액을 기준으로 계산해 드리겠습니다. COT 자격은 일반 MDRT 목표 금액의 3배 실적이 필요합니다.\n\n검색된 2025 회계연도 데이터를 기반으로 산출된 결과입니다.\n\n1. **COT 목표 금액 (3x MDRT)**\n   *   일반 MDRT 목표: ₩54,000,000\n   *   COT 목표 금액: ₩162,000,000\n\n2. **현재 MDRT 인정 실적**\n   *   현재 실적: ₩0\n   *   *참고: 누적 신계약 수입은 ₩447,592로 기록되어 있으나, MDRT 인정 계산 결과는 ₩0으로 반영되었습니다.*\n\n3. **COT 달성을 위해 더 필요한 금액**\n   *   COT 목표 달성을 위해서는 **₩162,000,000**이 추가로 필요합니다.\n\n현재 진행률은 FYC MDRT 진행률 기준으로 0.6% 수준입니다. 자격 달성까지 남은 기간 동안 효율적인 영업 활동을 통해 목표를 달성하시기를 응원합니다.",
+                "passed": false,
+                "reason": "Calculation incorrect: expected 0, got 307"
+              },
+              "numericAccuracy": -306
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00307_chunk_284",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 14875,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:33:23.165Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT022",
+            "category": "mdrt_calculation",
+            "difficulty": "medium",
+            "name": "COT achievement rate",
+            "description": "Calculate COT achievement percentage",
+            "query": "J00134 COT 달성률?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "calculation",
+              "expected": 0,
+              "tolerance": 0.05,
+              "formula": "(employee.commission.total / COT_REQUIREMENT) * 100"
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134].commission.total",
+              "transform": "cotRate"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "J00134 설계사님의 COT 달성률 현황에 대해 안내해 드리겠습니다.\n\n현재 조회된 최신 데이터(2025년 10월 기준)에 따르면, 설계사님의 FYC MDRT 진행률은 64%입니다.\n\nCOT(Court of the Table)는 MDRT(Million Dollar Round Table) 기준 실적의 3배를 달성해야 하므로, 현재 MDRT 진행률 64%를 기준으로 환산한 COT 달성률은 약 21.33%입니다.\n\n구체적인 실적 정보는 다음과 같습니다.\n\n회계연도 2025년 10월 기준 누적 실적:\n*   FYC MDRT 진행률: 64%\n*   AGI MDRT 진행률: 39.3%\n*   누적 신계약수입 (FYC): ₩45,272,186\n*   총수입 (누적): ₩48,169,867\n\nCOT 달성을 위해서는 MDRT 기준을 넘어 목표액의 3배에 도달해야 하니, 참고하시어 성공적인 실적 관리를 진행하시길 바랍니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "mdrt",
+              "confidence": 0.95,
+              "processingTime": 15404
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "calculation",
+                  "expected": 0,
+                  "tolerance": 0.05,
+                  "formula": "(employee.commission.total / COT_REQUIREMENT) * 100"
+                },
+                "actualValue": "J00134 설계사님의 COT 달성률 현황에 대해 안내해 드리겠습니다.\n\n현재 조회된 최신 데이터(2025년 10월 기준)에 따르면, 설계사님의 FYC MDRT 진행률은 64%입니다.\n\nCOT(Court of the Table)는 MDRT(Million Dollar Round Table) 기준 실적의 3배를 달성해야 하므로, 현재 MDRT 진행률 64%를 기준으로 환산한 COT 달성률은 약 21.33%입니다.\n\n구체적인 실적 정보는 다음과 같습니다.\n\n회계연도 2025년 10월 기준 누적 실적:\n*   FYC MDRT 진행률: 64%\n*   AGI MDRT 진행률: 39.3%\n*   누적 신계약수입 (FYC): ₩45,272,186\n*   총수입 (누적): ₩48,169,867\n\nCOT 달성을 위해서는 MDRT 기준을 넘어 목표액의 3배에 도달해야 하니, 참고하시어 성공적인 실적 관리를 진행하시길 바랍니다.",
+                "passed": false,
+                "reason": "Calculation incorrect: expected 0, got 134"
+              },
+              "numericAccuracy": -133
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 15426,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:33:38.693Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT030",
+            "category": "mdrt_calculation",
+            "difficulty": "hard",
+            "name": "TOT eligibility check",
+            "description": "Check if employee meets TOT (6x MDRT) requirement",
+            "query": "J00134 TOT 자격 가능해?",
+            "queryVariants": [
+              "J00134 TOT 되나?",
+              "J00134 탑오브더테이블"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "boolean",
+              "expected": false
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134].commission.total",
+              "transform": "compareToTot"
+            },
+            "metadata": {
+              "notes": "TOT requirement: 734,730,000원 (6x MDRT)"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "J00134 설계사님의 2025년 회계연도 기준 TOT 자격 가능 여부를 확인하였습니다.\n\n현재까지의 누적 실적을 기준으로 볼 때, J00134 설계사님은 현재 TOT (Top of the Table) 자격은 불가능한 상태입니다.\n\n**현재 진행 현황 (2025년 11월 기준):**\n\n1.  **FYC MDRT 진행률:** 64%\n2.  **AGI MDRT 진행률:** 39.3%\n3.  **신계약수입 (누적):** 45,272,186원\n4.  **총수입 (누적):** 48,169,867원\n\n**설명:**\n\nTOT 자격은 MDRT 기본 자격 기준의 6배를 달성해야 주어집니다. 현재 MDRT 기준을 아직 100% 달성하지 못하고 64% 진행 중이시므로, 우선 남은 기간 동안 MDRT 기본 자격 달성(100%)에 집중하실 필요가 있습니다.\n\nMDRT를 달성하신 후, COT(Court of the Table, 300%)를 거쳐 TOT(600%) 진입을 목표로 설정하시는 것이 일반적인 단계입니다. 남은 기간 동안 목표 달성을 위해 실적 관리에 최선을 다해 주시기 바랍니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "mdrt",
+              "confidence": 0.95,
+              "processingTime": 14519
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "boolean",
+                  "expected": false
+                },
+                "actualValue": "J00134 설계사님의 2025년 회계연도 기준 TOT 자격 가능 여부를 확인하였습니다.\n\n현재까지의 누적 실적을 기준으로 볼 때, J00134 설계사님은 현재 TOT (Top of the Table) 자격은 불가능한 상태입니다.\n\n**현재 진행 현황 (2025년 11월 기준):**\n\n1.  **FYC MDRT 진행률:** 64%\n2.  **AGI MDRT 진행률:** 39.3%\n3.  **신계약수입 (누적):** 45,272,186원\n4.  **총수입 (누적):** 48,169,867원\n\n**설명:**\n\nTOT 자격은 MDRT 기본 자격 기준의 6배를 달성해야 주어집니다. 현재 MDRT 기준을 아직 100% 달성하지 못하고 64% 진행 중이시므로, 우선 남은 기간 동안 MDRT 기본 자격 달성(100%)에 집중하실 필요가 있습니다.\n\nMDRT를 달성하신 후, COT(Court of the Table, 300%)를 거쳐 TOT(600%) 진입을 목표로 설정하시는 것이 일반적인 단계입니다. 남은 기간 동안 목표 달성을 위해 실적 관리에 최선을 다해 주시기 바랍니다.",
+                "passed": false,
+                "reason": "Boolean mismatch: expected false, response suggests positive"
+              }
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 14546,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:33:53.340Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT031",
+            "category": "mdrt_calculation",
+            "difficulty": "expert",
+            "name": "TOT gap calculation",
+            "description": "Calculate remaining amount for TOT",
+            "query": "J00307 TOT까지 얼마나 남았어?",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "calculation",
+              "expected": 0,
+              "tolerance": 0.05,
+              "formula": "TOT_REQUIREMENT - employee.commission.total"
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00307].commission.total",
+              "transform": "totGap"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "J00307 설계사님의 TOT(Top of the Table) 달성 현황을 계산해 드리겠습니다.\n\n제공된 데이터 기준으로, 일반 MDRT 목표 금액은 54,000,000원입니다. TOT는 MDRT 목표의 3배이므로, TOT 달성 목표 금액은 162,000,000원입니다.\n\n현재까지 MDRT 계산 기준으로 집계된 설계사님의 누적 실적은 0원입니다.\n\n따라서 J00307 설계사님께서 TOT 달성을 위해 추가로 달성해야 하는 남은 금액은 총 162,000,000원입니다.\n\n현재 달성률은 0.0%입니다. 회계연도 Q4 기간(2025년 10월 데이터 기준)을 고려할 때, 목표 달성을 위해 보다 적극적인 실적 관리가 필요합니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00307_chunk_284"
+            ],
+            "metadata": {
+              "intent": "calculation",
+              "template": "mdrt",
+              "calculationResult": {
+                "current": 0,
+                "target": 54000000,
+                "gap": 54000000,
+                "progress": 0,
+                "achieved": 0
+              },
+              "confidence": 0.95,
+              "processingTime": 14412
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "calculation",
+                  "expected": 0,
+                  "tolerance": 0.05,
+                  "formula": "TOT_REQUIREMENT - employee.commission.total"
+                },
+                "actualValue": "J00307 설계사님의 TOT(Top of the Table) 달성 현황을 계산해 드리겠습니다.\n\n제공된 데이터 기준으로, 일반 MDRT 목표 금액은 54,000,000원입니다. TOT는 MDRT 목표의 3배이므로, TOT 달성 목표 금액은 162,000,000원입니다.\n\n현재까지 MDRT 계산 기준으로 집계된 설계사님의 누적 실적은 0원입니다.\n\n따라서 J00307 설계사님께서 TOT 달성을 위해 추가로 달성해야 하는 남은 금액은 총 162,000,000원입니다.\n\n현재 달성률은 0.0%입니다. 회계연도 Q4 기간(2025년 10월 데이터 기준)을 고려할 때, 목표 달성을 위해 보다 적극적인 실적 관리가 필요합니다.",
+                "passed": false,
+                "reason": "Calculation incorrect: expected 0, got 307"
+              },
+              "numericAccuracy": -306
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00307_chunk_284",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 14433,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:34:07.874Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT040",
+            "category": "mdrt_calculation",
+            "difficulty": "expert",
+            "name": "Best path to MDRT",
+            "description": "Determine whether commission or income path is closer",
+            "query": "J00134 MDRT 달성하려면 커미션이 나아 총수입이 나아?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "커미션",
+                "총수입"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134]",
+              "transform": "bestMdrtPath"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "J00134 설계사님의 2025년 11월 기준 MDRT 달성 현황을 분석해 드립니다.\n\nMDRT 달성 기준은 크게 두 가지, 신계약수입(FYC, 커미션 기반) 기준과 총수입(AGI, 수입 기반) 기준 중 하나를 충족해야 합니다.\n\n현재 설계사님의 데이터를 비교했을 때, **커미션(신계약수입) 기준의 진행률이 총수입 기준보다 훨씬 앞서고 있습니다.**\n\n### 1. 신계약수입 (FYC, 커미션) 기준 현황\n\n*   **누적 신계약수입:** ₩45,272,186\n*   **MDRT 진행률:** 64%\n\n### 2. 총수입 (AGI, 총수입) 기준 현황\n\n*   **누적 총수입:** ₩48,169,867\n*   **MDRT 진행률:** 39.3%\n\n### 실용적인 조언\n\n누적 금액 자체는 총수입이 높지만, MDRT 달성을 위한 목표 금액 기준이 신계약수입(FYC)이 총수입(AGI)보다 낮기 때문에, 현재 설계사님은 **신계약수입(커미션)을 중심으로 남은 목표를 달성하시는 것이 더 유리한 상황**입니다. 현재 64%를 달성하셨으므로, 신계약수입 목표를 중심으로 남은 기간 동안 36%의 실적을 추가로 확보하는 데 집중해 주시면 되겠습니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "general_qa",
+              "template": "mdrt",
+              "confidence": 0.95,
+              "processingTime": 13368
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": [],
+                  "containsAny": [
+                    "커미션",
+                    "총수입"
+                  ]
+                },
+                "actualValue": "J00134 설계사님의 2025년 11월 기준 MDRT 달성 현황을 분석해 드립니다.\n\nMDRT 달성 기준은 크게 두 가지, 신계약수입(FYC, 커미션 기반) 기준과 총수입(AGI, 수입 기반) 기준 중 하나를 충족해야 합니다.\n\n현재 설계사님의 데이터를 비교했을 때, **커미션(신계약수입) 기준의 진행률이 총수입 기준보다 훨씬 앞서고 있습니다.**\n\n### 1. 신계약수입 (FYC, 커미션) 기준 현황\n\n*   **누적 신계약수입:** ₩45,272,186\n*   **MDRT 진행률:** 64%\n\n### 2. 총수입 (AGI, 총수입) 기준 현황\n\n*   **누적 총수입:** ₩48,169,867\n*   **MDRT 진행률:** 39.3%\n\n### 실용적인 조언\n\n누적 금액 자체는 총수입이 높지만, MDRT 달성을 위한 목표 금액 기준이 신계약수입(FYC)이 총수입(AGI)보다 낮기 때문에, 현재 설계사님은 **신계약수입(커미션)을 중심으로 남은 목표를 달성하시는 것이 더 유리한 상황**입니다. 현재 64%를 달성하셨으므로, 신계약수입 목표를 중심으로 남은 기간 동안 36%의 실적을 추가로 확보하는 데 집중해 주시면 되겠습니다.",
+                "passed": true,
+                "reason": "Contains all required terms: "
+              },
+              "containsRequired": true
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 13387,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:34:21.363Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT041",
+            "category": "mdrt_calculation",
+            "difficulty": "expert",
+            "name": "MDRT projection",
+            "description": "Project if MDRT can be achieved by year end",
+            "query": "J00307 이번 달 추세로 연말까지 MDRT 가능해?",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "가능",
+                "어려",
+                "달성",
+                "예상"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00307]",
+              "transform": "projectMdrt"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "안녕하세요.\n\n질문하신 \"J00307 이번 달 추세로 연말까지 MDRT 가능해?\"에 대한 정보를 찾을 수 없습니다.\n\n다음과 같이 질문해 보세요:\n• MDRT까지 얼마 남았어?\n• FYC 진행률\n• AGI 누적 현황\n• 월별 실적 비교\n\n무엇을 도와드릴까요?",
+            "sources": [],
+            "metadata": {
+              "intent": "calculation",
+              "template": "mdrt",
+              "confidence": 0.95,
+              "processingTime": 10455
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": [],
+                  "containsAny": [
+                    "가능",
+                    "어려",
+                    "달성",
+                    "예상"
+                  ]
+                },
+                "actualValue": "안녕하세요.\n\n질문하신 \"J00307 이번 달 추세로 연말까지 MDRT 가능해?\"에 대한 정보를 찾을 수 없습니다.\n\n다음과 같이 질문해 보세요:\n• MDRT까지 얼마 남았어?\n• FYC 진행률\n• AGI 누적 현황\n• 월별 실적 비교\n\n무엇을 도와드릴까요?",
+                "passed": true,
+                "reason": "Contains all required terms: "
+              },
+              "containsRequired": true
+            },
+            "retrieval": {
+              "retrievedCount": 0,
+              "relevantCount": 0,
+              "precision": 0,
+              "recall": 0,
+              "f1Score": 0,
+              "mrr": 0,
+              "ndcg": 0,
+              "avgScore": 0,
+              "sources": []
+            },
+            "response": {
+              "responseTimeMs": 10475,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:34:31.939Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT050",
+            "category": "mdrt_calculation",
+            "difficulty": "easy",
+            "name": "MDRT requirement lookup",
+            "description": "Look up MDRT commission requirement",
+            "query": "MDRT 커미션 기준이 얼마야?",
+            "queryVariants": [
+              "MDRT 요건",
+              "MDRT 자격 금액",
+              "2026년 MDRT 기준"
+            ],
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 122455000,
+              "tolerance": 0.01
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "mdrtStandards.requirements.commission"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "MDRT 커미션 기준 금액에 대해 문의해 주셨습니다.\n\n현재 고객님의 실적 데이터 기준으로 MDRT 달성 진행 상황을 안내해 드립니다.\n\n검색된 2025년 11월 (회계연도 2025) 기준 고객님의 MDRT 달성 진행률은 다음과 같습니다.\n\n1. FYC (First Year Commission) 기준 진행률\n현재 MDRT 달성 목표 대비 64%를 진행하셨습니다.\n누적된 신계약수입은 45,272,186원입니다.\n\n2. AGI (Annual Gross Income) 기준 진행률\n현재 MDRT 달성 목표 대비 39.3%를 진행하셨습니다.\n누적된 총수입은 48,169,867원입니다.\n\n현재 데이터는 MDRT 기준 자체의 절대 금액보다는, 고객님께서 그 기준을 향해 얼마나 달성했는지에 초점을 맞추어 보여주고 있습니다.\n\n현재 64%의 높은 FYC 진행률을 달성하고 계시므로, 남은 기간 목표 금액을 확인하시어 마무리하시는데 집중하시기를 추천드립니다. 필요하시면 해당 회계연도의 정확한 MDRT 기준 금액표를 참고하시거나, 재무 담당자에게 문의하여 남은 필요 금액을 확인해 보시는 것이 좋겠습니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "general_qa",
+              "template": "mdrt",
+              "confidence": 0.95,
+              "processingTime": 13717
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "numeric",
+                  "expected": 122455000,
+                  "tolerance": 0.01
+                },
+                "actualValue": "MDRT 커미션 기준 금액에 대해 문의해 주셨습니다.\n\n현재 고객님의 실적 데이터 기준으로 MDRT 달성 진행 상황을 안내해 드립니다.\n\n검색된 2025년 11월 (회계연도 2025) 기준 고객님의 MDRT 달성 진행률은 다음과 같습니다.\n\n1. FYC (First Year Commission) 기준 진행률\n현재 MDRT 달성 목표 대비 64%를 진행하셨습니다.\n누적된 신계약수입은 45,272,186원입니다.\n\n2. AGI (Annual Gross Income) 기준 진행률\n현재 MDRT 달성 목표 대비 39.3%를 진행하셨습니다.\n누적된 총수입은 48,169,867원입니다.\n\n현재 데이터는 MDRT 기준 자체의 절대 금액보다는, 고객님께서 그 기준을 향해 얼마나 달성했는지에 초점을 맞추어 보여주고 있습니다.\n\n현재 64%의 높은 FYC 진행률을 달성하고 계시므로, 남은 기간 목표 금액을 확인하시어 마무리하시는데 집중하시기를 추천드립니다. 필요하시면 해당 회계연도의 정확한 MDRT 기준 금액표를 참고하시거나, 재무 담당자에게 문의하여 남은 필요 금액을 확인해 보시는 것이 좋겠습니다.",
+                "passed": false,
+                "reason": "Expected 122455000, got 2025000 (diff: 120430000)"
+              },
+              "numericAccuracy": 0.01653668694622512
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 13736,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:34:45.776Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT051",
+            "category": "mdrt_calculation",
+            "difficulty": "easy",
+            "name": "MDRT income requirement lookup",
+            "description": "Look up MDRT income requirement",
+            "query": "MDRT 총수입 기준은?",
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 244910000,
+              "tolerance": 0.01
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "mdrtStandards.requirements.income"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "MDRT 총수입 (AGI, Adjusted Gross Income) 기준에 대해 문의하셨습니다.\n\nMDRT 총수입 기준은 매년 미국 MDRT 본부에서 발표하는 공식 기준 금액이며, 환율 및 연도에 따라 약간의 변동이 있습니다. 일반적으로 총수입 기준으로 MDRT 자격을 달성하기 위해서는 연간 **약 1억 4천만 원 중반대**의 총수입이 필요합니다.\n\n검색된 최신 데이터 (2025년 11월 기준)를 통해 현재 달성 현황을 안내해 드립니다.\n\n1.  **누적 총수입:** 현재까지 누적된 총수입은 48,169,867원입니다.\n2.  **MDRT 진행률:** 총수입 (AGI) 기준 MDRT 진행률은 39.3%를 달성하셨습니다.\n\n현재 기준 39.3%를 달성하셨으므로, 남은 기간 동안 MDRT 총수입 기준을 충족하시기 위해서는 약 60% 수준의 추가 실적 달성이 필요합니다. 정확한 목표 달성 계획을 세우시는 데 이 정보가 도움이 되기를 바랍니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "general_qa",
+              "template": "mdrt",
+              "confidence": 0.95,
+              "processingTime": 13064
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "numeric",
+                  "expected": 244910000,
+                  "tolerance": 0.01
+                },
+                "actualValue": "MDRT 총수입 (AGI, Adjusted Gross Income) 기준에 대해 문의하셨습니다.\n\nMDRT 총수입 기준은 매년 미국 MDRT 본부에서 발표하는 공식 기준 금액이며, 환율 및 연도에 따라 약간의 변동이 있습니다. 일반적으로 총수입 기준으로 MDRT 자격을 달성하기 위해서는 연간 **약 1억 4천만 원 중반대**의 총수입이 필요합니다.\n\n검색된 최신 데이터 (2025년 11월 기준)를 통해 현재 달성 현황을 안내해 드립니다.\n\n1.  **누적 총수입:** 현재까지 누적된 총수입은 48,169,867원입니다.\n2.  **MDRT 진행률:** 총수입 (AGI) 기준 MDRT 진행률은 39.3%를 달성하셨습니다.\n\n현재 기준 39.3%를 달성하셨으므로, 남은 기간 동안 MDRT 총수입 기준을 충족하시기 위해서는 약 60% 수준의 추가 실적 달성이 필요합니다. 정확한 목표 달성 계획을 세우시는 데 이 정보가 도움이 되기를 바랍니다.",
+                "passed": false,
+                "reason": "Expected 244910000, got 100000000 (diff: 144910000)"
+              },
+              "numericAccuracy": 0.408313257931485
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 13086,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:34:58.963Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT052",
+            "category": "mdrt_calculation",
+            "difficulty": "easy",
+            "name": "COT requirement lookup",
+            "description": "Look up COT commission requirement",
+            "query": "COT 기준 금액 알려줘",
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 367365000,
+              "tolerance": 0.01
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "mdrtStandards.cot.commission"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "COT (Court of the Table) 기준 금액에 대해 문의하셨습니다.\n\nCOT 실적은 일반적으로 FYC(First Year Commission)와 AGI(Annualized Gross Income) 두 가지 기준으로 관리됩니다.\n\n검색된 2025년 11월 기준 데이터에 따르면, COT 기준 금액은 다음과 같습니다.\n\n1.  **FYC (First Year Commission) 기준 COT 임계값:**\n    212,110,500원\n\n2.  **AGI (Annualized Gross Income) 기준 COT 임계값:**\n    367,366,500원\n\n설계사님의 현재 MDRT 진행률은 64%로 확인되니, COT 달성을 위해 현재 진행하고 계신 FYC 및 AGI 달성 현황을 주기적으로 확인하시는 것을 추천드립니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "general_qa",
+              "template": "general",
+              "confidence": 0.95,
+              "processingTime": 9987
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "numeric",
+                  "expected": 367365000,
+                  "tolerance": 0.01
+                },
+                "actualValue": "COT (Court of the Table) 기준 금액에 대해 문의하셨습니다.\n\nCOT 실적은 일반적으로 FYC(First Year Commission)와 AGI(Annualized Gross Income) 두 가지 기준으로 관리됩니다.\n\n검색된 2025년 11월 기준 데이터에 따르면, COT 기준 금액은 다음과 같습니다.\n\n1.  **FYC (First Year Commission) 기준 COT 임계값:**\n    212,110,500원\n\n2.  **AGI (Annualized Gross Income) 기준 COT 임계값:**\n    367,366,500원\n\n설계사님의 현재 MDRT 진행률은 64%로 확인되니, COT 달성을 위해 현재 진행하고 계신 FYC 및 AGI 달성 현황을 주기적으로 확인하시는 것을 추천드립니다.",
+                "passed": false,
+                "reason": "Expected 367365000, got 2025000 (diff: 365340000)"
+              },
+              "numericAccuracy": 0.00551222898207504
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 10006,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:35:09.071Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT053",
+            "category": "mdrt_calculation",
+            "difficulty": "easy",
+            "name": "TOT requirement lookup",
+            "description": "Look up TOT commission requirement",
+            "query": "TOT 커미션 기준은?",
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 734730000,
+              "tolerance": 0.01
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "mdrtStandards.tot.commission"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "TOT 커미션 기준에 대해 문의하셨습니다.\n\nTOT(Top of the Table)는 MDRT(Million Dollar Round Table)의 최고 등급 기준이며, 일반적으로 연간 커미션 수입(FYC, First Year Commission)을 기준으로 산정됩니다.\n\n현재 검색된 정보는 2025 회계연도 Q4(2025년 11월 데이터 기준)의 누적 실적 현황입니다.\n\n검색된 데이터에 따르면, 2025 회계연도 기준으로 MDRT의 진행률은 다음과 같습니다:\n\n1. FYC MDRT 진행률 (누적): 64%\n2. AGI MDRT 진행률 (누적): 39.3%\n\n현재까지의 신계약수입 누적액은 45,272,186원이며, 총수입 누적액은 48,169,867원입니다.\n\n**TOT 등급 기준 설명:**\n\nTOT는 MDRT 기준액의 3배를 충족해야 합니다. 각 회계연도마다 국제 MDRT 협회에서 공식 기준액을 발표하지만, 일반적인 TOT 커미션 기준은 MDRT 달성 기준 금액의 3배로 이해하시면 됩니다.\n\n현재 검색된 데이터는 MDRT 달성 진행률을 보여주고 있으며, 정확한 2025년도 TOT 커미션 기준액 자체는 포함하고 있지 않습니다.\n\n**참고 조언:**\n현재 누적 FYC 진행률이 64%이시므로, 목표 달성을 위해서는 남은 기간 동안 실적 관리에 집중하시는 것이 중요합니다. 2025년도 공식 TOT 기준액 확인을 위해 인사 또는 재무 부서에 문의하시거나, MDRT 공식 웹사이트를 통해 확인하시는 것을 추천드립니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "general_qa",
+              "template": "mdrt",
+              "confidence": 0.95,
+              "processingTime": 8465
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "numeric",
+                  "expected": 734730000,
+                  "tolerance": 0.01
+                },
+                "actualValue": "TOT 커미션 기준에 대해 문의하셨습니다.\n\nTOT(Top of the Table)는 MDRT(Million Dollar Round Table)의 최고 등급 기준이며, 일반적으로 연간 커미션 수입(FYC, First Year Commission)을 기준으로 산정됩니다.\n\n현재 검색된 정보는 2025 회계연도 Q4(2025년 11월 데이터 기준)의 누적 실적 현황입니다.\n\n검색된 데이터에 따르면, 2025 회계연도 기준으로 MDRT의 진행률은 다음과 같습니다:\n\n1. FYC MDRT 진행률 (누적): 64%\n2. AGI MDRT 진행률 (누적): 39.3%\n\n현재까지의 신계약수입 누적액은 45,272,186원이며, 총수입 누적액은 48,169,867원입니다.\n\n**TOT 등급 기준 설명:**\n\nTOT는 MDRT 기준액의 3배를 충족해야 합니다. 각 회계연도마다 국제 MDRT 협회에서 공식 기준액을 발표하지만, 일반적인 TOT 커미션 기준은 MDRT 달성 기준 금액의 3배로 이해하시면 됩니다.\n\n현재 검색된 데이터는 MDRT 달성 진행률을 보여주고 있으며, 정확한 2025년도 TOT 커미션 기준액 자체는 포함하고 있지 않습니다.\n\n**참고 조언:**\n현재 누적 FYC 진행률이 64%이시므로, 목표 달성을 위해서는 남은 기간 동안 실적 관리에 집중하시는 것이 중요합니다. 2025년도 공식 TOT 기준액 확인을 위해 인사 또는 재무 부서에 문의하시거나, MDRT 공식 웹사이트를 통해 확인하시는 것을 추천드립니다.",
+                "passed": false,
+                "reason": "Expected 734730000, got 20250000 (diff: 714480000)"
+              },
+              "numericAccuracy": 0.0275611449103752
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 8494,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:35:17.666Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT060",
+            "category": "mdrt_calculation",
+            "difficulty": "medium",
+            "name": "Informal MDRT query",
+            "description": "Handle casual MDRT query",
+            "query": "나 MDRT 될까?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "MDRT",
+                "달성",
+                "부족",
+                "필요"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134]"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "보험 설계사님, 2025년도 MDRT 달성 현황에 대해 문의해 주셨습니다. 최신 데이터를 분석하여 현재 진행 상황을 안내해 드리겠습니다.\n\n2025년 10월 기준으로 확인된 MDRT 달성 진행 상황은 다음과 같습니다.\n\n1. FYC (신계약수입) 기준 진행률:\n현재 MDRT 목표 진행률은 64%입니다.\n누적된 신계약수입(FYC)은 ₩45,272,186입니다.\n\n2. AGI (총수입) 기준 진행률:\n총수입(AGI) 기준 진행률은 39.3%이며, 누적 총수입은 ₩48,169,867입니다.\n\n현재 FYC 기준으로 목표의 64%를 성공적으로 달성하셨습니다. 남은 기간 동안 약 36%의 추가적인 실적 확보가 필요합니다. 목표 달성을 위해 남은 기간 동안 꾸준히 실적 관리를 진행하시기를 권장드립니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "mdrt",
+              "confidence": 0.95,
+              "processingTime": 13320
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": [],
+                  "containsAny": [
+                    "MDRT",
+                    "달성",
+                    "부족",
+                    "필요"
+                  ]
+                },
+                "actualValue": "보험 설계사님, 2025년도 MDRT 달성 현황에 대해 문의해 주셨습니다. 최신 데이터를 분석하여 현재 진행 상황을 안내해 드리겠습니다.\n\n2025년 10월 기준으로 확인된 MDRT 달성 진행 상황은 다음과 같습니다.\n\n1. FYC (신계약수입) 기준 진행률:\n현재 MDRT 목표 진행률은 64%입니다.\n누적된 신계약수입(FYC)은 ₩45,272,186입니다.\n\n2. AGI (총수입) 기준 진행률:\n총수입(AGI) 기준 진행률은 39.3%이며, 누적 총수입은 ₩48,169,867입니다.\n\n현재 FYC 기준으로 목표의 64%를 성공적으로 달성하셨습니다. 남은 기간 동안 약 36%의 추가적인 실적 확보가 필요합니다. 목표 달성을 위해 남은 기간 동안 꾸준히 실적 관리를 진행하시기를 권장드립니다.",
+                "passed": true,
+                "reason": "Contains all required terms: "
+              },
+              "containsRequired": true
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 13338,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:35:31.106Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT061",
+            "category": "mdrt_calculation",
+            "difficulty": "medium",
+            "name": "Very informal MDRT gap query",
+            "description": "Handle very casual query style",
+            "query": "MDRT 얼마 모자라",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 0,
+              "tolerance": 0.1
+            },
+            "groundTruthSource": {
+              "type": "mdrt",
+              "path": "employees[sabon=J00134].commission.total",
+              "transform": "mdrtGap"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "고객님, 문의하신 MDRT 달성 현황에 대해 안내해 드리겠습니다.\n\n현재 시스템에 계산된 MDRT 목표액은 54,000,000원입니다.\n\n계산된 현재 실적은 0원으로 확인되어, 달성률은 0.0%입니다.\n\n따라서 MDRT 달성을 위해 추가로 필요한 금액은 54,000,000원입니다. 현재까지는 MDRT 목표를 미달성한 상태로 확인됩니다.\n\n참고로, 2025 회계연도 11월 기준 누적 신계약수입은 45,272,186원이며 총수입은 48,169,867원입니다. 이 데이터는 MDRT 달성률이 FYC 기준 64%, AGI 기준 39.3%로 진행 중임을 보여주지만, 최종 MDRT 계산 결과는 54,000,000원이 남은 것으로 확정되었습니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "calculation",
+              "template": "mdrt",
+              "calculationResult": {
+                "current": 0,
+                "target": 54000000,
+                "gap": 54000000,
+                "progress": 0,
+                "achieved": 0
+              },
+              "confidence": 0.95,
+              "processingTime": 12422
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "numeric",
+                  "expected": 0,
+                  "tolerance": 0.1
+                },
+                "actualValue": "고객님, 문의하신 MDRT 달성 현황에 대해 안내해 드리겠습니다.\n\n현재 시스템에 계산된 MDRT 목표액은 54,000,000원입니다.\n\n계산된 현재 실적은 0원으로 확인되어, 달성률은 0.0%입니다.\n\n따라서 MDRT 달성을 위해 추가로 필요한 금액은 54,000,000원입니다. 현재까지는 MDRT 목표를 미달성한 상태로 확인됩니다.\n\n참고로, 2025 회계연도 11월 기준 누적 신계약수입은 45,272,186원이며 총수입은 48,169,867원입니다. 이 데이터는 MDRT 달성률이 FYC 기준 64%, AGI 기준 39.3%로 진행 중임을 보여주지만, 최종 MDRT 계산 결과는 54,000,000원이 남은 것으로 확정되었습니다.",
+                "passed": false,
+                "reason": "Expected 0, got 540000000000 (diff: 540000000000)"
+              },
+              "numericAccuracy": -539999999999
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 12449,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:35:43.656Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT070",
+            "category": "mdrt_calculation",
+            "difficulty": "expert",
+            "name": "MDRT 보장성금액 contribution",
+            "description": "Calculate how 보장성금액 contributes to MDRT",
+            "query": "J00134 보장성금액이 MDRT 달성에 얼마나 기여해?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "calculation",
+              "expected": 0,
+              "tolerance": 0.1
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].commission.保障性금액"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "요청하신 'J00134 보장성금액'의 MDRT 달성 기여도에 대한 상세 정보는 현재 검색된 자료에서 직접적으로 확인되지 않습니다.\n\n하지만 2025년 11월 누적 기준으로 고객님의 MDRT 전체 진행 현황을 통해 현재 달성률과 총수입 기여도를 안내해 드릴 수 있습니다.\n\n1. MDRT 진행 현황 (2025년 11월 기준)\n현재 FYC(초년도수당) 기준 MDRT 진행률은 64%입니다.\nAGI(총 조정소득) 기준 MDRT 진행률은 39.3%를 달성하셨습니다.\n\n2. 누적 수입 기여액\n2025년 11월까지의 누적 신계약 수입(FYC 포함)은 총 45,272,186원입니다.\n총수입(누적)은 48,169,867원입니다.\n\nJ00134와 같은 특정 상품 코드가 전체 목표 달성에 미치는 영향을 파악하기 위해서는 상품별 상세 실적 데이터가 필요합니다. 현재 달성률 64%를 바탕으로 남은 기간 동안 MDRT 달성을 위해 필요한 목표 금액을 확인하시고, 이를 집중적인 영업 계획 수립에 활용하시는 것을 추천드립니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "general_qa",
+              "template": "mdrt",
+              "confidence": 0.9,
+              "processingTime": 15333
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "calculation",
+                  "expected": 0,
+                  "tolerance": 0.1
+                },
+                "actualValue": "요청하신 'J00134 보장성금액'의 MDRT 달성 기여도에 대한 상세 정보는 현재 검색된 자료에서 직접적으로 확인되지 않습니다.\n\n하지만 2025년 11월 누적 기준으로 고객님의 MDRT 전체 진행 현황을 통해 현재 달성률과 총수입 기여도를 안내해 드릴 수 있습니다.\n\n1. MDRT 진행 현황 (2025년 11월 기준)\n현재 FYC(초년도수당) 기준 MDRT 진행률은 64%입니다.\nAGI(총 조정소득) 기준 MDRT 진행률은 39.3%를 달성하셨습니다.\n\n2. 누적 수입 기여액\n2025년 11월까지의 누적 신계약 수입(FYC 포함)은 총 45,272,186원입니다.\n총수입(누적)은 48,169,867원입니다.\n\nJ00134와 같은 특정 상품 코드가 전체 목표 달성에 미치는 영향을 파악하기 위해서는 상품별 상세 실적 데이터가 필요합니다. 현재 달성률 64%를 바탕으로 남은 기간 동안 MDRT 달성을 위해 필요한 목표 금액을 확인하시고, 이를 집중적인 영업 계획 수립에 활용하시는 것을 추천드립니다.",
+                "passed": false,
+                "reason": "Calculation incorrect: expected 0, got 1340000"
+              },
+              "numericAccuracy": -1339999
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 15351,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:35:59.108Z"
+        },
+        {
+          "testCase": {
+            "id": "MDRT071",
+            "category": "mdrt_calculation",
+            "difficulty": "expert",
+            "name": "MDRT with 보장성금액 only",
+            "description": "Check if 보장성금액 alone meets MDRT",
+            "query": "J00307 보장성금액만으로 MDRT 될 수 있어?",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "boolean",
+              "expected": false
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00307].commission.保障性금액"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "고객님, MDRT 자격 달성 여부에 대해 문의주셨습니다.\n\nJ00307 보장성 상품의 실적이 MDRT 자격 기준을 충족하는지에 대한 질문이시군요.\n\nMDRT 자격은 특정 상품 종류(보장성, 저축성 등)로 제한되지 않으며, 해당 상품에서 발생한 실적이 MDRT 협회가 정한 연간 수수료(FYC), 연간 총소득(AGI), 또는 인정 보험료 기준액을 충족하면 자격이 부여됩니다.\n\n즉, **J00307 보장성 상품의 실적만으로도 해당 실적에 해당하는 수수료(FYC 또는 AGI)가 MDRT 기준액을 충족한다면 MDRT 달성이 가능**합니다.\n\n검색된 2025년 11월 기준 MDRT 자격 기준액은 다음과 같습니다.\n\n*   **FYC(First Year Commission) 기준:** ₩70,703,500\n*   **AGI(Annualized Gross Income) 기준:** ₩122,455,500\n\n현재 검색된 데이터에는 'J00307 보장성금액'에 대한 상세한 실적 분할 정보가 포함되어 있지 않아 고객님의 해당 상품 기여도를 직접 계산해 드릴 수는 없습니다.\n\n하지만 해당 상품의 수수료만으로 위 두 기준 중 하나를 달성한다면 MDRT 자격을 얻으실 수 있습니다. 현재 고객님의 전체 FYC MDRT 진행률은 ₩1로 기준액 달성까지 ₩70,255,908이 남은 상태입니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00307_chunk_284"
+            ],
+            "metadata": {
+              "intent": "general_qa",
+              "template": "general",
+              "confidence": 0.9,
+              "processingTime": 15408
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "boolean",
+                  "expected": false
+                },
+                "actualValue": "고객님, MDRT 자격 달성 여부에 대해 문의주셨습니다.\n\nJ00307 보장성 상품의 실적이 MDRT 자격 기준을 충족하는지에 대한 질문이시군요.\n\nMDRT 자격은 특정 상품 종류(보장성, 저축성 등)로 제한되지 않으며, 해당 상품에서 발생한 실적이 MDRT 협회가 정한 연간 수수료(FYC), 연간 총소득(AGI), 또는 인정 보험료 기준액을 충족하면 자격이 부여됩니다.\n\n즉, **J00307 보장성 상품의 실적만으로도 해당 실적에 해당하는 수수료(FYC 또는 AGI)가 MDRT 기준액을 충족한다면 MDRT 달성이 가능**합니다.\n\n검색된 2025년 11월 기준 MDRT 자격 기준액은 다음과 같습니다.\n\n*   **FYC(First Year Commission) 기준:** ₩70,703,500\n*   **AGI(Annualized Gross Income) 기준:** ₩122,455,500\n\n현재 검색된 데이터에는 'J00307 보장성금액'에 대한 상세한 실적 분할 정보가 포함되어 있지 않아 고객님의 해당 상품 기여도를 직접 계산해 드릴 수는 없습니다.\n\n하지만 해당 상품의 수수료만으로 위 두 기준 중 하나를 달성한다면 MDRT 자격을 얻으실 수 있습니다. 현재 고객님의 전체 FYC MDRT 진행률은 ₩1로 기준액 달성까지 ₩70,255,908이 남은 상태입니다.",
+                "passed": false,
+                "reason": "Boolean mismatch: expected false, response suggests positive"
+              }
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 1,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00307_chunk_284",
+                  "score": 1,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 15433,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T03:36:14.643Z"
+        }
+      ],
+      "summary": {
+        "totalTests": 21,
+        "passed": 4,
+        "failed": 17,
+        "errors": 0,
+        "skipped": 0,
+        "passRate": 0.19047619047619047,
+        "avgResponseTime": 13247.380952380952,
+        "avgRetrievalPrecision": 0.9523809523809523,
+        "avgRetrievalRecall": 0.9523809523809523,
+        "avgF1Score": 0.9523809523809523
+      },
+      "timestamp": "2025-12-09T03:36:14.744Z",
+      "duration": 280322
+    }
+  ],
+  "overallSummary": {
+    "totalSuites": 1,
+    "totalTests": 21,
+    "passed": 4,
+    "failed": 17,
+    "errors": 0,
+    "skipped": 0,
+    "overallPassRate": 0.19047619047619047,
+    "byCategory": {
+      "mdrt_calculation": {
+        "total": 21,
+        "passed": 4,
+        "passRate": 0.19047619047619047
+      }
+    },
+    "byDifficulty": {
+      "medium": {
+        "total": 6,
+        "passed": 1,
+        "passRate": 0.16666666666666666
+      },
+      "easy": {
+        "total": 5,
+        "passed": 1,
+        "passRate": 0.2
+      },
+      "hard": {
+        "total": 5,
+        "passed": 0,
+        "passRate": 0
+      },
+      "expert": {
+        "total": 5,
+        "passed": 2,
+        "passRate": 0.4
+      }
+    }
+  },
+  "configuration": {
+    "ragVersion": "v2",
+    "useReranking": true,
+    "topK": 20,
+    "rerankTopN": 5,
+    "embeddingModel": "text-embedding-3-large",
+    "rerankModel": "cohere-rerank-3.5"
+  },
+  "timestamp": "2025-12-09T03:36:14.744Z",
+  "totalDuration": 280323
+}

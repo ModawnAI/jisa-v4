@@ -1,0 +1,2231 @@
+{
+  "id": "eval-1765253414311",
+  "name": "RAG Evaluation 2025-12-09",
+  "description": "Comprehensive RAG evaluation with 1 test suites",
+  "suiteResults": [
+    {
+      "suite": {
+        "id": "employee-lookup",
+        "name": "Employee Lookup Tests",
+        "description": "Tests for retrieving individual employee data accurately from RAG system",
+        "category": "employee_lookup",
+        "testCases": [
+          {
+            "id": "EL001",
+            "category": "employee_lookup",
+            "difficulty": "easy",
+            "name": "Basic employee name lookup",
+            "description": "Retrieve employee name by employee ID (사번)",
+            "query": "J00134 직원 이름이 뭐야?",
+            "queryVariants": [
+              "J00134 누구야?",
+              "J00134번 직원 알려줘",
+              "사번 J00134 이름"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAll": [
+                "J00134"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].name"
+            }
+          },
+          {
+            "id": "EL002",
+            "category": "employee_lookup",
+            "difficulty": "easy",
+            "name": "Employee job type lookup",
+            "description": "Retrieve employee job type",
+            "query": "J00307 직급이 뭐야?",
+            "queryVariants": [
+              "J00307 무슨 직급?",
+              "J00307 포지션 알려줘"
+            ],
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "LP",
+                "SM",
+                "AM",
+                "사업본부장"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00307].jobType"
+            }
+          },
+          {
+            "id": "EL003",
+            "category": "employee_lookup",
+            "difficulty": "easy",
+            "name": "Employee branch lookup",
+            "description": "Retrieve employee branch information",
+            "query": "J00001 소속 지점이 어디야?",
+            "queryVariants": [
+              "J00001 어느 지점?",
+              "J00001 소속"
+            ],
+            "context": {
+              "employeeNumber": "J00001"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": []
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00001].branch"
+            }
+          },
+          {
+            "id": "EL004",
+            "category": "employee_lookup",
+            "difficulty": "easy",
+            "name": "Employee office lookup",
+            "description": "Retrieve employee office information",
+            "query": "J00134 근무처가 어디야?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": []
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].office"
+            }
+          },
+          {
+            "id": "EL010",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "Total commission lookup",
+            "description": "Retrieve total commission amount for an employee",
+            "query": "J00134 총 커미션 얼마야?",
+            "queryVariants": [
+              "J00134 수수료 총액",
+              "J00134 커미션 합계",
+              "J00134 올해 수수료"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 0,
+              "tolerance": 0.05
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].commission.total"
+            }
+          },
+          {
+            "id": "EL011",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "Commission 보장성금액 lookup",
+            "description": "Retrieve commission 보장성금액 for an employee",
+            "query": "J00307 커미션 보장성금액 얼마야?",
+            "queryVariants": [
+              "J00307 보장성 수수료",
+              "J00307 보장성금액"
+            ],
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "보장성",
+                "커미션",
+                "J00307",
+                "0",
+                "없"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00307].commission.保障性금액"
+            }
+          },
+          {
+            "id": "EL020",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "Total income lookup",
+            "description": "Retrieve total income for an employee",
+            "query": "J00134 총수입 얼마야?",
+            "queryVariants": [
+              "J00134 수입",
+              "J00134 income",
+              "J00134 총수입금액"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 0,
+              "tolerance": 0.05
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].totalIncome.total"
+            }
+          },
+          {
+            "id": "EL021",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "신계약수입 lookup",
+            "description": "Retrieve 신계약수입 for an employee",
+            "query": "J00134 신계약수입 알려줘",
+            "queryVariants": [
+              "J00134 신계약 수입",
+              "J00134 new contract income"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 0,
+              "tolerance": 0.05
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].totalIncome.신계약수입"
+            }
+          },
+          {
+            "id": "EL022",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "Total income 보장성금액 lookup",
+            "description": "Retrieve 총수입 보장성금액 for an employee",
+            "query": "J00307 총수입 중 보장성금액은?",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "보장성",
+                "총수입",
+                "J00307",
+                "0",
+                "없"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00307].totalIncome.보장성금액"
+            }
+          },
+          {
+            "id": "EL030",
+            "category": "employee_lookup",
+            "difficulty": "hard",
+            "name": "Self-contract commission lookup",
+            "description": "Retrieve self-contract commission data",
+            "query": "J00134 자기계약 커미션 얼마야?",
+            "queryVariants": [
+              "J00134 자기계약 수수료",
+              "J00134 본인계약 커미션"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "자기계약",
+                "커미션",
+                "J00134",
+                "0",
+                "없",
+                "본인계약"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].selfContract.commission.total"
+            }
+          },
+          {
+            "id": "EL031",
+            "category": "employee_lookup",
+            "difficulty": "hard",
+            "name": "Self-contract total income lookup",
+            "description": "Retrieve self-contract total income data",
+            "query": "J00307 자기계약 총수입은?",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "자기계약",
+                "총수입",
+                "J00307",
+                "211,566",
+                "211566"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00307].selfContract.totalIncome.total"
+            }
+          },
+          {
+            "id": "EL040",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "Multiple fields - Commission and Income",
+            "description": "Query for both commission and income in one query",
+            "query": "J00134 커미션이랑 총수입 둘 다 알려줘",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAll": [
+                "커미션",
+                "총수입"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134]"
+            }
+          },
+          {
+            "id": "EL041",
+            "category": "employee_lookup",
+            "difficulty": "hard",
+            "name": "Complete employee profile",
+            "description": "Query for complete employee information",
+            "query": "J00307 프로필 전체 알려줘 - 이름, 직급, 지점, 커미션, 총수입",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "이름",
+                "직급",
+                "지점",
+                "커미션",
+                "총수입"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00307]"
+            }
+          },
+          {
+            "id": "EL050",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "Informal commission query",
+            "description": "Handle informal/casual Korean query style",
+            "query": "134 수수료 ㅇㅇ",
+            "queryVariants": [
+              "J00134 얼마 벌어?",
+              "134번 수입 알려줘",
+              "J134 돈 얼마야"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 0,
+              "tolerance": 0.1
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].commission.total"
+            }
+          },
+          {
+            "id": "EL051",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "Colloquial income query",
+            "description": "Handle colloquial Korean query",
+            "query": "내 수입 얼마지?",
+            "queryVariants": [
+              "나 돈 얼마 벌었어?",
+              "내 총수입?"
+            ],
+            "context": {
+              "employeeNumber": "J00134",
+              "employeeId": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 0,
+              "tolerance": 0.1
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].totalIncome.total"
+            }
+          },
+          {
+            "id": "EL060",
+            "category": "employee_lookup",
+            "difficulty": "hard",
+            "name": "Non-existent employee",
+            "description": "Handle query for non-existent employee",
+            "query": "J99999 커미션 얼마야?",
+            "context": {
+              "employeeNumber": "J99999"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "없",
+                "찾을 수 없",
+                "데이터 없",
+                "조회되지 않",
+                "확인",
+                "어떤",
+                "정확한",
+                "알려주",
+                "J99999"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J99999]"
+            }
+          },
+          {
+            "id": "EL061",
+            "category": "employee_lookup",
+            "difficulty": "hard",
+            "name": "Partial employee ID",
+            "description": "Handle query with partial employee ID",
+            "query": "134번 커미션",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 0,
+              "tolerance": 0.1
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].commission.total"
+            }
+          },
+          {
+            "id": "EL062",
+            "category": "employee_lookup",
+            "difficulty": "expert",
+            "name": "Ambiguous employee reference",
+            "description": "Handle ambiguous query that needs clarification",
+            "query": "홍길동 커미션 얼마야?",
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "여러",
+                "확인",
+                "사번",
+                "어떤"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees"
+            }
+          },
+          {
+            "id": "EL070",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "My data vs team average",
+            "description": "Compare own data to team context",
+            "query": "내 커미션이 팀 평균보다 높아?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "boolean",
+              "expected": true
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].commission.total"
+            }
+          },
+          {
+            "id": "EL071",
+            "category": "employee_lookup",
+            "difficulty": "hard",
+            "name": "My ranking query",
+            "description": "Query for own ranking among employees",
+            "query": "내 커미션 순위가 몇 등이야?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "등",
+                "위",
+                "순위",
+                "번째",
+                "rank",
+                "커미션"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].commission.total"
+            },
+            "metadata": {
+              "notes": "Requires ranking calculation - checking for ranking-related terms in response"
+            }
+          }
+        ]
+      },
+      "results": [
+        {
+          "testCase": {
+            "id": "EL001",
+            "category": "employee_lookup",
+            "difficulty": "easy",
+            "name": "Basic employee name lookup",
+            "description": "Retrieve employee name by employee ID (사번)",
+            "query": "J00134 직원 이름이 뭐야?",
+            "queryVariants": [
+              "J00134 누구야?",
+              "J00134번 직원 알려줘",
+              "사번 J00134 이름"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAll": [
+                "J00134"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].name"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "죄송합니다. 현재 검색된 관련 정보(2025년 11월 기준)에는 직원 ID J00134에 해당하는 성함 정보가 포함되어 있지 않습니다.\n\n성함 정보는 확인되지 않았지만, 해당 직원의 2025년 11월 주요 실적 및 급여 정보는 검색되었습니다. 필요하시다면 해당 실적 정보를 대신 안내해 드릴 수 있습니다.\n\n[검색된 2025년 11월 주요 실적 정보 요약]\n*   총 커미션: 45,272,186원\n*   총 소득: 48,169,867원\n*   FYC MDRT 진행률: 64% (MDRT 기준 70,703,500원 중 25,431,314원 달성)\n*   조직 내 백분위: 89%",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "general",
+              "confidence": 0.95,
+              "processingTime": 13291
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": [],
+                  "containsAll": [
+                    "J00134"
+                  ]
+                },
+                "actualValue": "죄송합니다. 현재 검색된 관련 정보(2025년 11월 기준)에는 직원 ID J00134에 해당하는 성함 정보가 포함되어 있지 않습니다.\n\n성함 정보는 확인되지 않았지만, 해당 직원의 2025년 11월 주요 실적 및 급여 정보는 검색되었습니다. 필요하시다면 해당 실적 정보를 대신 안내해 드릴 수 있습니다.\n\n[검색된 2025년 11월 주요 실적 정보 요약]\n*   총 커미션: 45,272,186원\n*   총 소득: 48,169,867원\n*   FYC MDRT 진행률: 64% (MDRT 기준 70,703,500원 중 25,431,314원 달성)\n*   조직 내 백분위: 89%",
+                "passed": true,
+                "reason": "Contains all required terms: containsAll: ✓"
+              },
+              "containsRequired": true
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 0.9591543,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 0.9591543,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 14427,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:07:20.264Z"
+        },
+        {
+          "testCase": {
+            "id": "EL002",
+            "category": "employee_lookup",
+            "difficulty": "easy",
+            "name": "Employee job type lookup",
+            "description": "Retrieve employee job type",
+            "query": "J00307 직급이 뭐야?",
+            "queryVariants": [
+              "J00307 무슨 직급?",
+              "J00307 포지션 알려줘"
+            ],
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "LP",
+                "SM",
+                "AM",
+                "사업본부장"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00307].jobType"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "문의하신 'J00307' 코드에 대한 정보를 현재 검색된 문서 내에서는 찾을 수 없습니다.\n\n검색된 [문서 1]은 2025년 11월 기준으로 특정 설계사의 수수료, 소득, MDRT 달성 진행률 등 **재무 및 성과 지표**를 상세하게 보여주는 보고서입니다.\n\n해당 문서에 포함된 주요 성과 정보는 다음과 같습니다:\n\n*   **총 커미션:** ₩447,592\n*   **총 소득:** -₩4,561,145 (마이너스 값)\n*   **조직 내 순위 (rankInOrganization):** 525위\n*   **MDRT 진행률 (FYC 기준):** ₩1\n*   **MDRT 기준점 (fycMdrtThreshold):** ₩70,703,500\n\n'J00307' 코드가 실제 직급명(예: Senior Manager, Executive Partner 등)이 아닌 내부 시스템상의 분류 코드나 인사 관련 정보일 경우, 해당 정보를 담고 있는 별도의 직급 체계 문서를 통해 확인이 필요합니다.\n\n현재 데이터로는 성과 지표만 확인 가능하며, 'J00307' 직급에 대한 정의는 제공해 드릴 수 없음을 양해 부탁드립니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00307_chunk_284"
+            ],
+            "metadata": {
+              "intent": "general_qa",
+              "template": "general",
+              "confidence": 0.95,
+              "processingTime": 13587
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": [],
+                  "containsAny": [
+                    "LP",
+                    "SM",
+                    "AM",
+                    "사업본부장"
+                  ]
+                },
+                "actualValue": "문의하신 'J00307' 코드에 대한 정보를 현재 검색된 문서 내에서는 찾을 수 없습니다.\n\n검색된 [문서 1]은 2025년 11월 기준으로 특정 설계사의 수수료, 소득, MDRT 달성 진행률 등 **재무 및 성과 지표**를 상세하게 보여주는 보고서입니다.\n\n해당 문서에 포함된 주요 성과 정보는 다음과 같습니다:\n\n*   **총 커미션:** ₩447,592\n*   **총 소득:** -₩4,561,145 (마이너스 값)\n*   **조직 내 순위 (rankInOrganization):** 525위\n*   **MDRT 진행률 (FYC 기준):** ₩1\n*   **MDRT 기준점 (fycMdrtThreshold):** ₩70,703,500\n\n'J00307' 코드가 실제 직급명(예: Senior Manager, Executive Partner 등)이 아닌 내부 시스템상의 분류 코드나 인사 관련 정보일 경우, 해당 정보를 담고 있는 별도의 직급 체계 문서를 통해 확인이 필요합니다.\n\n현재 데이터로는 성과 지표만 확인 가능하며, 'J00307' 직급에 대한 정의는 제공해 드릴 수 없음을 양해 부탁드립니다.",
+                "passed": false,
+                "reason": "Missing terms in response"
+              },
+              "containsRequired": false
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 0.9401336,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00307_chunk_284",
+                  "score": 0.9401336,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 13607,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:07:33.971Z"
+        },
+        {
+          "testCase": {
+            "id": "EL003",
+            "category": "employee_lookup",
+            "difficulty": "easy",
+            "name": "Employee branch lookup",
+            "description": "Retrieve employee branch information",
+            "query": "J00001 소속 지점이 어디야?",
+            "queryVariants": [
+              "J00001 어느 지점?",
+              "J00001 소속"
+            ],
+            "context": {
+              "employeeNumber": "J00001"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": []
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00001].branch"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "안녕하세요.\n\n질문하신 \"J00001 소속 지점이 어디야?\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 26%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00001_chunk_0"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "general",
+              "confidence": 0.95,
+              "processingTime": 7817
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": []
+                },
+                "actualValue": "안녕하세요.\n\n질문하신 \"J00001 소속 지점이 어디야?\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 26%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+                "passed": true,
+                "reason": "Contains all required terms: "
+              },
+              "containsRequired": true
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 0,
+              "precision": 0,
+              "recall": 0,
+              "f1Score": 0,
+              "mrr": 0,
+              "ndcg": 0,
+              "avgScore": 0.25571522,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00001_chunk_0",
+                  "score": 0.25571522,
+                  "relevant": false
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 7840,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:07:41.912Z"
+        },
+        {
+          "testCase": {
+            "id": "EL004",
+            "category": "employee_lookup",
+            "difficulty": "easy",
+            "name": "Employee office lookup",
+            "description": "Retrieve employee office information",
+            "query": "J00134 근무처가 어디야?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": []
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].office"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "안녕하세요.\n\n질문하신 \"J00134 근무처가 어디야?\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 22%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "general_qa",
+              "template": "general",
+              "confidence": 0.95,
+              "processingTime": 6068
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": []
+                },
+                "actualValue": "안녕하세요.\n\n질문하신 \"J00134 근무처가 어디야?\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 22%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+                "passed": true,
+                "reason": "Contains all required terms: "
+              },
+              "containsRequired": true
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 0,
+              "precision": 0,
+              "recall": 0,
+              "f1Score": 0,
+              "mrr": 0,
+              "ndcg": 0,
+              "avgScore": 0.21518578,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 0.21518578,
+                  "relevant": false
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 6088,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:07:48.101Z"
+        },
+        {
+          "testCase": {
+            "id": "EL010",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "Total commission lookup",
+            "description": "Retrieve total commission amount for an employee",
+            "query": "J00134 총 커미션 얼마야?",
+            "queryVariants": [
+              "J00134 수수료 총액",
+              "J00134 커미션 합계",
+              "J00134 올해 수수료"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 0,
+              "tolerance": 0.05
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].commission.total"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "J00134 님의 총 커미션에 대한 정보를 확인해 드리겠습니다.\n\n현재 조회되는 가장 최신 데이터 기준으로, 2025년 11월 보고월까지의 총 누적 커미션은 45,272,186원입니다.\n\n혹시 특정 기간의 커미션이나 다른 성과 지표(예: 신계약 건수, 유지율 등)에 대한 정보가 필요하시면 다시 문의해 주십시오. 상세하게 확인해 드리겠습니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "aggregation",
+              "template": "compensation",
+              "confidence": 0.95,
+              "processingTime": 10606
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": true,
+              "validationDetails": {
+                "rule": {
+                  "type": "numeric",
+                  "expected": 45272186,
+                  "tolerance": 0.05
+                },
+                "actualValue": "J00134 님의 총 커미션에 대한 정보를 확인해 드리겠습니다.\n\n현재 조회되는 가장 최신 데이터 기준으로, 2025년 11월 보고월까지의 총 누적 커미션은 45,272,186원입니다.\n\n혹시 특정 기간의 커미션이나 다른 성과 지표(예: 신계약 건수, 유지율 등)에 대한 정보가 필요하시면 다시 문의해 주십시오. 상세하게 확인해 드리겠습니다.",
+                "passed": true,
+                "reason": "Numeric match within 5% tolerance"
+              },
+              "numericAccuracy": 1
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 0.9943141,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 0.9943141,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 10625,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:07:58.827Z"
+        },
+        {
+          "testCase": {
+            "id": "EL011",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "Commission 보장성금액 lookup",
+            "description": "Retrieve commission 보장성금액 for an employee",
+            "query": "J00307 커미션 보장성금액 얼마야?",
+            "queryVariants": [
+              "J00307 보장성 수수료",
+              "J00307 보장성금액"
+            ],
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "보장성",
+                "커미션",
+                "J00307",
+                "0",
+                "없"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00307].commission.保障性금액"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "안녕하세요. 보험 설계사님의 급여 및 실적 관리 AI 어시스턴트입니다.\n\nJ00307 설계사님의 커미션 보장성 금액을 조회해 드립니다.\n\n검색된 정보에 따르면, 2025년 11월 보고월 기준으로 J00307 설계사님의 총 커미션 (누적 합계)은 447,592원입니다.\n\n만약 특정 기간의 보장성 커미션 상세 내역이나 지급 방식에 대해 더 자세히 알고 싶으시면, 해당 기간을 지정하여 다시 문의해 주십시오. 감사합니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00307_chunk_284"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "compensation",
+              "confidence": 0.95,
+              "processingTime": 9285
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": [],
+                  "containsAny": [
+                    "보장성",
+                    "커미션",
+                    "J00307",
+                    "0",
+                    "없"
+                  ]
+                },
+                "actualValue": "안녕하세요. 보험 설계사님의 급여 및 실적 관리 AI 어시스턴트입니다.\n\nJ00307 설계사님의 커미션 보장성 금액을 조회해 드립니다.\n\n검색된 정보에 따르면, 2025년 11월 보고월 기준으로 J00307 설계사님의 총 커미션 (누적 합계)은 447,592원입니다.\n\n만약 특정 기간의 보장성 커미션 상세 내역이나 지급 방식에 대해 더 자세히 알고 싶으시면, 해당 기간을 지정하여 다시 문의해 주십시오. 감사합니다.",
+                "passed": true,
+                "reason": "Contains all required terms: containsAny: ✓"
+              },
+              "containsRequired": true
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 0.99911004,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00307_chunk_284",
+                  "score": 0.99911004,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 9311,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:08:08.239Z"
+        },
+        {
+          "testCase": {
+            "id": "EL020",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "Total income lookup",
+            "description": "Retrieve total income for an employee",
+            "query": "J00134 총수입 얼마야?",
+            "queryVariants": [
+              "J00134 수입",
+              "J00134 income",
+              "J00134 총수입금액"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 0,
+              "tolerance": 0.05
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].totalIncome.total"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "J00134 설계사님의 현재까지 누적된 총수입(총 커미션)은 2025년 11월 기준으로 45,272,186원입니다.\n\n이는 2025년 11월 보고월까지의 누적 합계액임을 참고해 주시기 바랍니다.\n\n혹시 특정 기간의 수입 내역이나 상세 지급 항목(예: 신규 계약 커미션, 유지 보너스 등)에 대해 추가로 확인하고 싶으신 부분이 있으신가요? 말씀해 주시면 바로 조회해 드리겠습니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "compensation",
+              "confidence": 0.95,
+              "processingTime": 9829
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "numeric",
+                  "expected": 48169867,
+                  "tolerance": 0.05
+                },
+                "actualValue": "J00134 설계사님의 현재까지 누적된 총수입(총 커미션)은 2025년 11월 기준으로 45,272,186원입니다.\n\n이는 2025년 11월 보고월까지의 누적 합계액임을 참고해 주시기 바랍니다.\n\n혹시 특정 기간의 수입 내역이나 상세 지급 항목(예: 신규 계약 커미션, 유지 보너스 등)에 대해 추가로 확인하고 싶으신 부분이 있으신가요? 말씀해 주시면 바로 조회해 드리겠습니다.",
+                "passed": false,
+                "reason": "Expected 48169867, got 45272186 (diff: 2897681)"
+              },
+              "numericAccuracy": 0.9398445297762603
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 0.9034647,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 0.9034647,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 9848,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:08:18.189Z"
+        },
+        {
+          "testCase": {
+            "id": "EL021",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "신계약수입 lookup",
+            "description": "Retrieve 신계약수입 for an employee",
+            "query": "J00134 신계약수입 알려줘",
+            "queryVariants": [
+              "J00134 신계약 수입",
+              "J00134 new contract income"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 0,
+              "tolerance": 0.05
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].totalIncome.신계약수입"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "J00134 보험 설계사님의 2025년 11월 신계약수입(총 커미션 누적합계)은 45,272,186원입니다.\n\n검색된 정보는 2025년 11월 보고월 기준으로 확인되었습니다. 추가적인 기간의 정보나 상세한 실적 분석이 필요하시면 언제든지 다시 문의해 주십시오.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "compensation",
+              "confidence": 0.95,
+              "processingTime": 8322
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": true,
+              "validationDetails": {
+                "rule": {
+                  "type": "numeric",
+                  "expected": 45272186,
+                  "tolerance": 0.05
+                },
+                "actualValue": "J00134 보험 설계사님의 2025년 11월 신계약수입(총 커미션 누적합계)은 45,272,186원입니다.\n\n검색된 정보는 2025년 11월 보고월 기준으로 확인되었습니다. 추가적인 기간의 정보나 상세한 실적 분석이 필요하시면 언제든지 다시 문의해 주십시오.",
+                "passed": true,
+                "reason": "Numeric match within 5% tolerance"
+              },
+              "numericAccuracy": 1
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 0.987375,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 0.987375,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 8342,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:08:26.632Z"
+        },
+        {
+          "testCase": {
+            "id": "EL022",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "Total income 보장성금액 lookup",
+            "description": "Retrieve 총수입 보장성금액 for an employee",
+            "query": "J00307 총수입 중 보장성금액은?",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "보장성",
+                "총수입",
+                "J00307",
+                "0",
+                "없"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00307].totalIncome.보장성금액"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "현재 검색된 자료에는 설계사 J00307님의 '총수입 중 보장성금액'이 명시적으로 확인되지 않았습니다.\n\n다만, 2025년 11월 보고월 기준으로 확인된 J00307님의 총 커미션(누적합계) 정보는 다음과 같습니다.\n\n총 커미션 (누적합계): 447,592원\n\n보장성금액과 같은 상세 항목은 실적 상세 보고서에서 추가로 조회해야 확인이 가능합니다. 해당 정보를 추가 조회해 드릴까요?",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00307_chunk_284"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "compensation",
+              "confidence": 0.95,
+              "processingTime": 14720
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": [],
+                  "containsAny": [
+                    "보장성",
+                    "총수입",
+                    "J00307",
+                    "0",
+                    "없"
+                  ]
+                },
+                "actualValue": "현재 검색된 자료에는 설계사 J00307님의 '총수입 중 보장성금액'이 명시적으로 확인되지 않았습니다.\n\n다만, 2025년 11월 보고월 기준으로 확인된 J00307님의 총 커미션(누적합계) 정보는 다음과 같습니다.\n\n총 커미션 (누적합계): 447,592원\n\n보장성금액과 같은 상세 항목은 실적 상세 보고서에서 추가로 조회해야 확인이 가능합니다. 해당 정보를 추가 조회해 드릴까요?",
+                "passed": true,
+                "reason": "Contains all required terms: containsAny: ✓"
+              },
+              "containsRequired": true
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 0.9908744,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00307_chunk_284",
+                  "score": 0.9908744,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 14739,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:08:41.472Z"
+        },
+        {
+          "testCase": {
+            "id": "EL030",
+            "category": "employee_lookup",
+            "difficulty": "hard",
+            "name": "Self-contract commission lookup",
+            "description": "Retrieve self-contract commission data",
+            "query": "J00134 자기계약 커미션 얼마야?",
+            "queryVariants": [
+              "J00134 자기계약 수수료",
+              "J00134 본인계약 커미션"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "자기계약",
+                "커미션",
+                "J00134",
+                "0",
+                "없",
+                "본인계약"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].selfContract.commission.total"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "J00134님의 자기계약 커미션 정보에 대해 답변드리겠습니다.\n\n현재 검색된 정보는 2025년 11월 보고월 기준의 총 커미션(누적 합계)입니다.\n\nJ00134님의 2025년 11월 보고월 기준 총 커미션(누적 합계)은 45,272,186원입니다.\n\n만약 특정 기간의 자기계약 커미션이나 세부 지급 내역을 확인하고 싶으시다면, 보고월 또는 기간을 함께 말씀해 주시면 더 정확하게 조회해 드릴 수 있습니다. 감사합니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "compensation",
+              "confidence": 0.95,
+              "processingTime": 9480
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": [],
+                  "containsAny": [
+                    "자기계약",
+                    "커미션",
+                    "J00134",
+                    "0",
+                    "없",
+                    "본인계약"
+                  ]
+                },
+                "actualValue": "J00134님의 자기계약 커미션 정보에 대해 답변드리겠습니다.\n\n현재 검색된 정보는 2025년 11월 보고월 기준의 총 커미션(누적 합계)입니다.\n\nJ00134님의 2025년 11월 보고월 기준 총 커미션(누적 합계)은 45,272,186원입니다.\n\n만약 특정 기간의 자기계약 커미션이나 세부 지급 내역을 확인하고 싶으시다면, 보고월 또는 기간을 함께 말씀해 주시면 더 정확하게 조회해 드릴 수 있습니다. 감사합니다.",
+                "passed": true,
+                "reason": "Contains all required terms: containsAny: ✓"
+              },
+              "containsRequired": true
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 0.6880493,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 0.6880493,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 9498,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:08:51.072Z"
+        },
+        {
+          "testCase": {
+            "id": "EL031",
+            "category": "employee_lookup",
+            "difficulty": "hard",
+            "name": "Self-contract total income lookup",
+            "description": "Retrieve self-contract total income data",
+            "query": "J00307 자기계약 총수입은?",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "자기계약",
+                "총수입",
+                "J00307",
+                "211,566",
+                "211566"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00307].selfContract.totalIncome.total"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "J00307 설계사님의 자기계약 총수입에 대해 문의하셨습니다.\n\n검색된 정보에 따르면, 2025년 11월 기준으로 누적 집계된 총 커미션은 447,592원입니다.\n\n참고: 현재 시스템에서는 '자기계약 총수입'을 별도로 구분하여 제공하지 않고, '총 커미션' 항목으로 합산하여 보여주고 있습니다. 만약 자기계약 건에 대한 세부적인 수입 내역이 필요하시다면, 해당 월의 상세 수수료 내역 보고서를 확인해 보시는 것을 권장 드립니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00307_chunk_284"
+            ],
+            "metadata": {
+              "intent": "aggregation",
+              "template": "compensation",
+              "confidence": 0.95,
+              "processingTime": 11542
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": [],
+                  "containsAny": [
+                    "자기계약",
+                    "총수입",
+                    "J00307",
+                    "211,566",
+                    "211566"
+                  ]
+                },
+                "actualValue": "J00307 설계사님의 자기계약 총수입에 대해 문의하셨습니다.\n\n검색된 정보에 따르면, 2025년 11월 기준으로 누적 집계된 총 커미션은 447,592원입니다.\n\n참고: 현재 시스템에서는 '자기계약 총수입'을 별도로 구분하여 제공하지 않고, '총 커미션' 항목으로 합산하여 보여주고 있습니다. 만약 자기계약 건에 대한 세부적인 수입 내역이 필요하시다면, 해당 월의 상세 수수료 내역 보고서를 확인해 보시는 것을 권장 드립니다.",
+                "passed": true,
+                "reason": "Contains all required terms: containsAny: ✓"
+              },
+              "containsRequired": true
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 0.9843364,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00307_chunk_284",
+                  "score": 0.9843364,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 11563,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:09:02.736Z"
+        },
+        {
+          "testCase": {
+            "id": "EL040",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "Multiple fields - Commission and Income",
+            "description": "Query for both commission and income in one query",
+            "query": "J00134 커미션이랑 총수입 둘 다 알려줘",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAll": [
+                "커미션",
+                "총수입"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134]"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "J00134 설계사님의 2025년 11월 누적 실적 기준으로 커미션과 총수입 정보를 말씀드리겠습니다.\n\n현재까지의 누적 신계약 커미션 수입(FYC)은 45,272,186원입니다.\n\n총수입(누적)은 48,169,867원입니다.\n\n해당 데이터는 2025년 회계연도 기준, 2025년 11월까지의 누적 실적임을 참고하여 주시기 바랍니다.",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "mdrt",
+              "confidence": 0.95,
+              "processingTime": 11621
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": [],
+                  "containsAll": [
+                    "커미션",
+                    "총수입"
+                  ]
+                },
+                "actualValue": "J00134 설계사님의 2025년 11월 누적 실적 기준으로 커미션과 총수입 정보를 말씀드리겠습니다.\n\n현재까지의 누적 신계약 커미션 수입(FYC)은 45,272,186원입니다.\n\n총수입(누적)은 48,169,867원입니다.\n\n해당 데이터는 2025년 회계연도 기준, 2025년 11월까지의 누적 실적임을 참고하여 주시기 바랍니다.",
+                "passed": true,
+                "reason": "Contains all required terms: containsAll: ✓"
+              },
+              "containsRequired": true
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 1,
+              "precision": 1,
+              "recall": 1,
+              "f1Score": 1,
+              "mrr": 1,
+              "ndcg": 1,
+              "avgScore": 0.99522626,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 0.99522626,
+                  "relevant": true
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 11642,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:09:14.480Z"
+        },
+        {
+          "testCase": {
+            "id": "EL041",
+            "category": "employee_lookup",
+            "difficulty": "hard",
+            "name": "Complete employee profile",
+            "description": "Query for complete employee information",
+            "query": "J00307 프로필 전체 알려줘 - 이름, 직급, 지점, 커미션, 총수입",
+            "context": {
+              "employeeNumber": "J00307"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "이름",
+                "직급",
+                "지점",
+                "커미션",
+                "총수입"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00307]"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "어떤 수수료 정보가 필요하신가요?\n\n1️⃣ 급여/실수령액 (이번달 급여명세서에서 수수료 내역)\n2️⃣ MDRT 달성현황 (연간 누적 커미션/FYC 실적)\n\n번호로 답변해 주세요.",
+            "sources": [],
+            "metadata": {
+              "intent": "general_qa",
+              "template": "general",
+              "confidence": 0.3,
+              "processingTime": 8787
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": [],
+                  "containsAny": [
+                    "이름",
+                    "직급",
+                    "지점",
+                    "커미션",
+                    "총수입"
+                  ]
+                },
+                "actualValue": "어떤 수수료 정보가 필요하신가요?\n\n1️⃣ 급여/실수령액 (이번달 급여명세서에서 수수료 내역)\n2️⃣ MDRT 달성현황 (연간 누적 커미션/FYC 실적)\n\n번호로 답변해 주세요.",
+                "passed": true,
+                "reason": "Contains all required terms: containsAny: ✓"
+              },
+              "containsRequired": true
+            },
+            "retrieval": {
+              "retrievedCount": 0,
+              "relevantCount": 0,
+              "precision": 0,
+              "recall": 0,
+              "f1Score": 0,
+              "mrr": 0,
+              "ndcg": 0,
+              "avgScore": 0,
+              "sources": []
+            },
+            "response": {
+              "responseTimeMs": 8787,
+              "clarificationNeeded": true,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:09:23.367Z"
+        },
+        {
+          "testCase": {
+            "id": "EL050",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "Informal commission query",
+            "description": "Handle informal/casual Korean query style",
+            "query": "134 수수료 ㅇㅇ",
+            "queryVariants": [
+              "J00134 얼마 벌어?",
+              "134번 수입 알려줘",
+              "J134 돈 얼마야"
+            ],
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 0,
+              "tolerance": 0.1
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].commission.total"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "안녕하세요.\n\n질문하신 \"134 수수료 ㅇㅇ\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 0%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "compensation",
+              "confidence": 0.95,
+              "processingTime": 7123
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "numeric",
+                  "expected": 45272186,
+                  "tolerance": 0.1
+                },
+                "actualValue": "안녕하세요.\n\n질문하신 \"134 수수료 ㅇㅇ\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 0%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+                "passed": false,
+                "reason": "Could not extract numeric value from response"
+              }
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 0,
+              "precision": 0,
+              "recall": 0,
+              "f1Score": 0,
+              "mrr": 0,
+              "ndcg": 0,
+              "avgScore": 0.0010649627,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 0.0010649627,
+                  "relevant": false
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 7141,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:09:30.608Z"
+        },
+        {
+          "testCase": {
+            "id": "EL051",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "Colloquial income query",
+            "description": "Handle colloquial Korean query",
+            "query": "내 수입 얼마지?",
+            "queryVariants": [
+              "나 돈 얼마 벌었어?",
+              "내 총수입?"
+            ],
+            "context": {
+              "employeeNumber": "J00134",
+              "employeeId": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 0,
+              "tolerance": 0.1
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].totalIncome.total"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "안녕하세요.\n\n질문하신 \"내 수입 얼마지?\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 0%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "compensation",
+              "confidence": 0.95,
+              "processingTime": 6163
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "numeric",
+                  "expected": 48169867,
+                  "tolerance": 0.1
+                },
+                "actualValue": "안녕하세요.\n\n질문하신 \"내 수입 얼마지?\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 0%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+                "passed": false,
+                "reason": "Could not extract numeric value from response"
+              }
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 0,
+              "precision": 0,
+              "recall": 0,
+              "f1Score": 0,
+              "mrr": 0,
+              "ndcg": 0,
+              "avgScore": 0.0017342081,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 0.0017342081,
+                  "relevant": false
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 6183,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:09:36.892Z"
+        },
+        {
+          "testCase": {
+            "id": "EL060",
+            "category": "employee_lookup",
+            "difficulty": "hard",
+            "name": "Non-existent employee",
+            "description": "Handle query for non-existent employee",
+            "query": "J99999 커미션 얼마야?",
+            "context": {
+              "employeeNumber": "J99999"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "없",
+                "찾을 수 없",
+                "데이터 없",
+                "조회되지 않",
+                "확인",
+                "어떤",
+                "정확한",
+                "알려주",
+                "J99999"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J99999]"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "어떤 수수료 정보가 필요하신가요?\n\n1️⃣ 급여/실수령액 (이번달 급여명세서에서 수수료 내역)\n2️⃣ MDRT 달성현황 (연간 누적 커미션/FYC 실적)\n\n번호로 답변해 주세요.",
+            "sources": [],
+            "metadata": {
+              "intent": "general_qa",
+              "template": "general",
+              "confidence": 0.3,
+              "processingTime": 5142
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": [],
+                  "containsAny": [
+                    "없",
+                    "찾을 수 없",
+                    "데이터 없",
+                    "조회되지 않",
+                    "확인",
+                    "어떤",
+                    "정확한",
+                    "알려주",
+                    "J99999"
+                  ]
+                },
+                "actualValue": "어떤 수수료 정보가 필요하신가요?\n\n1️⃣ 급여/실수령액 (이번달 급여명세서에서 수수료 내역)\n2️⃣ MDRT 달성현황 (연간 누적 커미션/FYC 실적)\n\n번호로 답변해 주세요.",
+                "passed": true,
+                "reason": "Contains all required terms: containsAny: ✓"
+              },
+              "containsRequired": true
+            },
+            "retrieval": {
+              "retrievedCount": 0,
+              "relevantCount": 0,
+              "precision": 0,
+              "recall": 0,
+              "f1Score": 0,
+              "mrr": 0,
+              "ndcg": 0,
+              "avgScore": 0,
+              "sources": []
+            },
+            "response": {
+              "responseTimeMs": 5142,
+              "clarificationNeeded": true,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:09:42.134Z"
+        },
+        {
+          "testCase": {
+            "id": "EL061",
+            "category": "employee_lookup",
+            "difficulty": "hard",
+            "name": "Partial employee ID",
+            "description": "Handle query with partial employee ID",
+            "query": "134번 커미션",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "numeric",
+              "expected": 0,
+              "tolerance": 0.1
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].commission.total"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "안녕하세요.\n\n질문하신 \"134번 커미션\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 1%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "compensation",
+              "confidence": 0.95,
+              "processingTime": 6480
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "numeric",
+                  "expected": 45272186,
+                  "tolerance": 0.1
+                },
+                "actualValue": "안녕하세요.\n\n질문하신 \"134번 커미션\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 1%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+                "passed": false,
+                "reason": "Could not extract numeric value from response"
+              }
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 0,
+              "precision": 0,
+              "recall": 0,
+              "f1Score": 0,
+              "mrr": 0,
+              "ndcg": 0,
+              "avgScore": 0.0063143647,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 0.0063143647,
+                  "relevant": false
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 6502,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:09:48.737Z"
+        },
+        {
+          "testCase": {
+            "id": "EL062",
+            "category": "employee_lookup",
+            "difficulty": "expert",
+            "name": "Ambiguous employee reference",
+            "description": "Handle ambiguous query that needs clarification",
+            "query": "홍길동 커미션 얼마야?",
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "여러",
+                "확인",
+                "사번",
+                "어떤"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees"
+            }
+          },
+          "status": "failed",
+          "ragResponse": {
+            "answer": "안녕하세요.\n\n질문하신 \"홍길동 커미션 얼마야?\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 0%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "direct_lookup",
+              "template": "compensation",
+              "confidence": 0.95,
+              "processingTime": 8939
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": false,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": [],
+                  "containsAny": [
+                    "여러",
+                    "확인",
+                    "사번",
+                    "어떤"
+                  ]
+                },
+                "actualValue": "안녕하세요.\n\n질문하신 \"홍길동 커미션 얼마야?\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 0%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+                "passed": false,
+                "reason": "Missing terms in response"
+              },
+              "containsRequired": false
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 0,
+              "precision": 0,
+              "recall": 0,
+              "f1Score": 0,
+              "mrr": 0,
+              "ndcg": 0,
+              "avgScore": 0.0034698907,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 0.0034698907,
+                  "relevant": false
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 8958,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:09:57.801Z"
+        },
+        {
+          "testCase": {
+            "id": "EL070",
+            "category": "employee_lookup",
+            "difficulty": "medium",
+            "name": "My data vs team average",
+            "description": "Compare own data to team context",
+            "query": "내 커미션이 팀 평균보다 높아?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "boolean",
+              "expected": true
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].commission.total"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "안녕하세요.\n\n질문하신 \"내 커미션이 팀 평균보다 높아?\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 0%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "comparison",
+              "template": "compensation",
+              "confidence": 0.95,
+              "processingTime": 8003
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "boolean",
+                  "expected": true
+                },
+                "actualValue": "안녕하세요.\n\n질문하신 \"내 커미션이 팀 평균보다 높아?\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 0%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+                "passed": true,
+                "reason": "Boolean match: expected true"
+              }
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 0,
+              "precision": 0,
+              "recall": 0,
+              "f1Score": 0,
+              "mrr": 0,
+              "ndcg": 0,
+              "avgScore": 0.0002758679,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 0.0002758679,
+                  "relevant": false
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 8029,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:10:05.931Z"
+        },
+        {
+          "testCase": {
+            "id": "EL071",
+            "category": "employee_lookup",
+            "difficulty": "hard",
+            "name": "My ranking query",
+            "description": "Query for own ranking among employees",
+            "query": "내 커미션 순위가 몇 등이야?",
+            "context": {
+              "employeeNumber": "J00134"
+            },
+            "expectedAnswer": {
+              "type": "text_contains",
+              "expected": [],
+              "containsAny": [
+                "등",
+                "위",
+                "순위",
+                "번째",
+                "rank",
+                "커미션"
+              ]
+            },
+            "groundTruthSource": {
+              "type": "employee",
+              "path": "employees[sabon=J00134].commission.total"
+            },
+            "metadata": {
+              "notes": "Requires ranking calculation - checking for ranking-related terms in response"
+            }
+          },
+          "status": "passed",
+          "ragResponse": {
+            "answer": "안녕하세요.\n\n질문하신 \"내 커미션 순위가 몇 등이야?\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 5%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+            "sources": [
+              "mdrt-parallel-1765205091525_emp_J00134_chunk_129"
+            ],
+            "metadata": {
+              "intent": "comparison",
+              "template": "compensation",
+              "confidence": 0.95,
+              "processingTime": 8159
+            }
+          },
+          "metrics": {
+            "correctness": {
+              "isCorrect": true,
+              "exactMatch": false,
+              "validationDetails": {
+                "rule": {
+                  "type": "text_contains",
+                  "expected": [],
+                  "containsAny": [
+                    "등",
+                    "위",
+                    "순위",
+                    "번째",
+                    "rank",
+                    "커미션"
+                  ]
+                },
+                "actualValue": "안녕하세요.\n\n질문하신 \"내 커미션 순위가 몇 등이야?\"와 관련된 정확한 정보를 찾기 어렵습니다.\n(관련도: 5%)\n\n더 구체적인 질문을 해주시면 정확한 답변을 드릴 수 있습니다.\n\n예시:\n• \"이번 달 최종지급액 알려줘\"\n• \"MDRT까지 얼마 남았어?\"\n• \"지난달 환수금 내역\"\n\n무엇을 도와드릴까요?",
+                "passed": true,
+                "reason": "Contains all required terms: containsAny: ✓"
+              },
+              "containsRequired": true
+            },
+            "retrieval": {
+              "retrievedCount": 1,
+              "relevantCount": 0,
+              "precision": 0,
+              "recall": 0,
+              "f1Score": 0,
+              "mrr": 0,
+              "ndcg": 0,
+              "avgScore": 0.054499876,
+              "sources": [
+                {
+                  "id": "mdrt-parallel-1765205091525_emp_J00134_chunk_129",
+                  "score": 0.054499876,
+                  "relevant": false
+                }
+              ]
+            },
+            "response": {
+              "responseTimeMs": 8178,
+              "clarificationNeeded": false,
+              "errorOccurred": false
+            }
+          },
+          "timestamp": "2025-12-09T04:10:14.210Z"
+        }
+      ],
+      "summary": {
+        "totalTests": 20,
+        "passed": 14,
+        "failed": 6,
+        "errors": 0,
+        "skipped": 0,
+        "passRate": 0.7,
+        "avgResponseTime": 9322.5,
+        "avgRetrievalPrecision": 0.5,
+        "avgRetrievalRecall": 0.5,
+        "avgF1Score": 0.5
+      },
+      "timestamp": "2025-12-09T04:10:14.311Z",
+      "duration": 188475
+    }
+  ],
+  "overallSummary": {
+    "totalSuites": 1,
+    "totalTests": 20,
+    "passed": 14,
+    "failed": 6,
+    "errors": 0,
+    "skipped": 0,
+    "overallPassRate": 0.7,
+    "byCategory": {
+      "employee_lookup": {
+        "total": 20,
+        "passed": 14,
+        "passRate": 0.7
+      }
+    },
+    "byDifficulty": {
+      "easy": {
+        "total": 4,
+        "passed": 3,
+        "passRate": 0.75
+      },
+      "medium": {
+        "total": 9,
+        "passed": 6,
+        "passRate": 0.6666666666666666
+      },
+      "hard": {
+        "total": 6,
+        "passed": 5,
+        "passRate": 0.8333333333333334
+      },
+      "expert": {
+        "total": 1,
+        "passed": 0,
+        "passRate": 0
+      }
+    }
+  },
+  "configuration": {
+    "ragVersion": "v2",
+    "useReranking": true,
+    "topK": 20,
+    "rerankTopN": 5,
+    "embeddingModel": "text-embedding-3-large",
+    "rerankModel": "cohere-rerank-3.5"
+  },
+  "timestamp": "2025-12-09T04:10:14.311Z",
+  "totalDuration": 188475
+}
