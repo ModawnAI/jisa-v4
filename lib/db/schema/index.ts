@@ -25,3 +25,4 @@ export * from './rag-metrics';
 export * from './autonomous-rag';
 export * from './chat-settings';
 export * from './detailed-records';
+export * from './ambiguity-rules';

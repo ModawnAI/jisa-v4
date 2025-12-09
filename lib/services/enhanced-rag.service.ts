@@ -12,11 +12,28 @@
  *
  * IMPORTANT: Schemas and prompts are pre-generated on document upload/delete.
  * They are NOT regenerated per query - this service uses cached schemas only.
+ *
+ * V2 FEATURES (enabled via useV2 option):
+ * - Hybrid search with dense + sparse embeddings
+ * - Cohere cross-encoder reranking
+ * - Reciprocal Rank Fusion (RRF)
+ * - Redis embedding cache
+ * - Enhanced observability
  */
 
 import { GoogleGenAI } from '@google/genai';
 import { createEmbedding } from '@/lib/utils/embedding';
 import { pineconeService, type SearchResult, type VectorMetadata } from './pinecone.service';
+// RAG V2 Services
+import {
+  hybridSearchService,
+  rerankService,
+  embeddingService,
+  observabilityService,
+  type RAGContext as RAGV2Context,
+  type SearchMatch,
+  type TieredMetadata,
+} from './rag-v2';
 import {
   queryUnderstandingService,
   type QueryUnderstandingContext,
@@ -43,6 +60,13 @@ import {
 } from './pipeline-state.service';
 import { ragMetricsService, type CompleteMetricData } from './rag-metrics.service';
 import { schemaRegistryService } from './schema-registry.service';
+import {
+  ambiguityDetectionService,
+} from './ambiguity-detection.service';
+import type {
+  AmbiguityDetectionResult,
+  ClarificationOption,
+} from '@/lib/types/ambiguity-detection';
 
 // Initialize Gemini client
 let aiClient: GoogleGenAI | null = null;
@@ -81,6 +105,15 @@ export interface EnhancedRAGContext {
   clearanceLevel?: 'basic' | 'standard' | 'advanced';
   /** Additional namespaces to search (e.g., organization namespace) */
   additionalNamespaces?: string[];
+  /**
+   * Enable RAG V2 features:
+   * - Hybrid search with dense + sparse embeddings
+   * - Cohere cross-encoder reranking
+   * - Reciprocal Rank Fusion (RRF)
+   * - Redis embedding cache
+   * - Enhanced observability
+   */
+  useV2?: boolean;
 }
 
 /**
@@ -94,6 +127,7 @@ export interface EnhancedRAGResult extends RAGExecutionResult {
     queryUnderstandingMs: number;
     embeddingMs: number;
     searchMs: number;
+    rerankMs?: number;
     calculationMs: number;
     generationMs: number;
     totalMs: number;
@@ -112,6 +146,15 @@ export interface EnhancedRAGResult extends RAGExecutionResult {
   needsClarification?: boolean;
   /** Clarification question to ask */
   clarificationQuestion?: string;
+  /** V2 search metrics (when useV2 is enabled) */
+  v2Metrics?: {
+    denseResultCount: number;
+    sparseResultCount: number;
+    fusedResultCount: number;
+    rerankInputCount: number;
+    rerankOutputCount: number;
+    cacheHit: boolean;
+  };
 }
 
 export class EnhancedRAGService {
@@ -240,48 +283,112 @@ export class EnhancedRAGService {
     const pineconeFilters = this.buildPineconeFilters(intent, context);
 
     // ===========================================================
-    // Step 5: Generate embedding for semantic search
+    // Step 5 & 6: Search (V1 or V2)
     // ===========================================================
-    const embStart = Date.now();
     const searchQuery = intent.semanticSearch.query || userQuery;
-    const embedding = await createEmbedding(searchQuery);
-    timing.embedding = Date.now() - embStart;
-
-    // ===========================================================
-    // Step 6: Search Pinecone
-    // ===========================================================
-    const searchStart = Date.now();
     const topK = intent.semanticSearch.topK || CONFIG.defaultTopK;
+    let searchResults: SearchResult[];
+    let v2Metrics: EnhancedRAGResult['v2Metrics'] | undefined;
 
-    let searchResults = await pineconeService.query(context.namespace, embedding, {
-      topK,
-      filter: pineconeFilters,
-      includeMetadata: true,
-    });
+    if (context.useV2) {
+      // V2: Hybrid search with reranking
+      const v2Result = await this.searchV2(
+        searchQuery,
+        context,
+        pineconeFilters,
+        topK,
+        timing
+      );
+      searchResults = v2Result.results;
+      v2Metrics = v2Result.metrics;
+    } else {
+      // V1: Traditional search
+      const embStart = Date.now();
+      const embedding = await createEmbedding(searchQuery);
+      timing.embedding = Date.now() - embStart;
 
-    // Fallback: If no results with filters, retry without filters
-    if (searchResults.length === 0 && Object.keys(pineconeFilters).length > 0) {
-      console.log('[Enhanced RAG] No results with filters, retrying without...');
+      const searchStart = Date.now();
       searchResults = await pineconeService.query(context.namespace, embedding, {
         topK,
+        filter: pineconeFilters,
         includeMetadata: true,
       });
-    }
 
-    // Also search additional namespaces if provided
-    if (context.additionalNamespaces && context.additionalNamespaces.length > 0 && searchResults.length < topK) {
-      for (const ns of context.additionalNamespaces) {
-        const additionalResults = await pineconeService.query(ns, embedding, {
-          topK: Math.max(3, topK - searchResults.length),
-          filter: this.buildOrganizationFilters(intent, context),
+      // Fallback: If no results with filters, retry without filters
+      if (searchResults.length === 0 && Object.keys(pineconeFilters).length > 0) {
+        console.log('[Enhanced RAG] No results with filters, retrying without...');
+        searchResults = await pineconeService.query(context.namespace, embedding, {
+          topK,
           includeMetadata: true,
         });
-        searchResults = [...searchResults, ...additionalResults];
       }
+
+      // Also search additional namespaces if provided
+      if (context.additionalNamespaces && context.additionalNamespaces.length > 0 && searchResults.length < topK) {
+        for (const ns of context.additionalNamespaces) {
+          const additionalResults = await pineconeService.query(ns, embedding, {
+            topK: Math.max(3, topK - searchResults.length),
+            filter: this.buildOrganizationFilters(intent, context),
+            includeMetadata: true,
+          });
+          searchResults = [...searchResults, ...additionalResults];
+        }
+      }
+
+      timing.search = Date.now() - searchStart;
     }
 
-    timing.search = Date.now() - searchStart;
-    console.log(`[Enhanced RAG] Found ${searchResults.length} results`);
+    console.log(`[Enhanced RAG] Found ${searchResults.length} results${context.useV2 ? ' (V2)' : ''}`);
+
+    // ===========================================================
+    // Step 6b: Post-Search Ambiguity Detection
+    // ===========================================================
+    const ambiguityStart = Date.now();
+    const ambiguityResult = await ambiguityDetectionService.detectAmbiguity(
+      userQuery,
+      searchResults.map(r => ({
+        id: r.id,
+        score: r.score,
+        metadata: r.metadata as Record<string, unknown>,
+      })),
+      { checkKeywordsBeforeSearch: true, analyzeResultDistribution: true }
+    );
+    timing.ambiguity = Date.now() - ambiguityStart;
+
+    if (ambiguityResult.needsClarification && context.sessionId) {
+      console.log(`[Enhanced RAG] Ambiguity detected: ${ambiguityResult.reason}`);
+
+      // Build the clarification message
+      const clarificationMessage = ambiguityDetectionService.formatClarificationMessage(
+        ambiguityResult.clarification
+      );
+
+      // Store pending clarification with template type and options
+      conversationStateService.setPendingClarification(
+        context.sessionId,
+        userQuery,
+        {
+          ...intent,
+          // Store ambiguity options for later parsing
+          extractedEntities: {
+            ...intent.extractedEntities,
+            ambiguityOptions: ambiguityResult.clarification?.options,
+          },
+        },
+        clarificationMessage,
+        'template'  // Use 'template' type for document type disambiguation
+      );
+
+      const totalTime = Date.now() - startTime;
+      console.log(`[Enhanced RAG] Asking for disambiguation in ${totalTime}ms`);
+
+      return this.createClarificationResult(
+        clarificationMessage,
+        timing.router,
+        timing.queryUnderstanding,
+        totalTime
+      );
+    }
 
     // ===========================================================
     // Step 7: Route to appropriate handler / Execute calculations
@@ -310,7 +417,10 @@ export class EnhancedRAGService {
     const totalTime = Date.now() - startTime;
 
     console.log(`[Enhanced RAG] Total time: ${totalTime}ms`);
-    console.log(`[Enhanced RAG] Breakdown: Router=${timing.router}ms, QU=${timing.queryUnderstanding}ms, Emb=${timing.embedding}ms, Search=${timing.search}ms, Calc=${timing.calculation}ms, Gen=${timing.generation}ms\n`);
+    const timingBreakdown = context.useV2
+      ? `Router=${timing.router}ms, QU=${timing.queryUnderstanding}ms, Emb=${timing.embedding}ms, Search=${timing.search}ms, Rerank=${timing.rerank || 0}ms, Calc=${timing.calculation}ms, Gen=${timing.generation}ms`
+      : `Router=${timing.router}ms, QU=${timing.queryUnderstanding}ms, Emb=${timing.embedding}ms, Search=${timing.search}ms, Calc=${timing.calculation}ms, Gen=${timing.generation}ms`;
+    console.log(`[Enhanced RAG] Breakdown: ${timingBreakdown}\n`);
 
     // ===========================================================
     // Step 9: Record metrics
@@ -329,6 +439,53 @@ export class EnhancedRAGService {
       confidence: intent.confidence,
     });
 
+    // Log to V2 observability if enabled
+    if (context.useV2) {
+      const ragV2Context: RAGV2Context = {
+        employeeId: context.employeeId,
+        organizationId: context.organizationId,
+        namespace: context.namespace,
+        sessionId: context.sessionId,
+        clearanceLevel: context.clearanceLevel,
+      };
+      observabilityService.logQuery(
+        userQuery,
+        {
+          answer,
+          sources: searchResults.slice(0, 3).map((r) => {
+            const searchableText = r.metadata?.searchable_text;
+            const previewText = typeof searchableText === 'string' ? searchableText.slice(0, 200) : '';
+            return {
+              id: r.id,
+              preview: (r.metadata?.preview as string) || previewText || '',
+              score: r.score,
+              metadata: r.metadata as unknown as TieredMetadata,
+            };
+          }),
+          confidence: intent.confidence,
+          metrics: {
+            queryUnderstanding: { timeMs: timing.queryUnderstanding, expandedQueries: 0 },
+            broadRetrieval: {
+              timeMs: timing.search,
+              denseResults: v2Metrics?.denseResultCount || 0,
+              sparseResults: v2Metrics?.sparseResultCount || 0,
+              fusedResults: v2Metrics?.fusedResultCount || 0,
+            },
+            reranking: {
+              timeMs: timing.rerank || 0,
+              model: 'rerank-multilingual-v3.0',
+              inputCount: v2Metrics?.rerankInputCount || 0,
+              outputCount: v2Metrics?.rerankOutputCount || 0,
+            },
+            contextAssembly: { timeMs: 0, chunksExpanded: 0, tokensUsed: 0 },
+            generation: { timeMs: timing.generation, model: CONFIG.model, tokensIn: 0, tokensOut: 0 },
+            total: { timeMs: totalTime },
+          },
+        },
+        ragV2Context
+      ).catch(console.error); // Don't block on observability
+    }
+
     return {
       answer,
       sources: searchResults.slice(0, 3).map((r) => r.id),
@@ -346,6 +503,7 @@ export class EnhancedRAGService {
         queryUnderstandingMs: timing.queryUnderstanding,
         embeddingMs: timing.embedding,
         searchMs: timing.search,
+        rerankMs: timing.rerank,
         calculationMs: timing.calculation,
         generationMs: timing.generation,
         totalMs: totalTime,
@@ -354,6 +512,99 @@ export class EnhancedRAGService {
         route: routerDecision.route,
         confidence: routerDecision.confidence,
         processingTimeMs: timing.router,
+      },
+      v2Metrics,
+    };
+  }
+
+  /**
+   * V2 Search: Hybrid search with dense + sparse embeddings and Cohere reranking
+   */
+  private async searchV2(
+    query: string,
+    context: EnhancedRAGContext,
+    filters: Record<string, unknown>,
+    topK: number,
+    timing: Record<string, number>
+  ): Promise<{
+    results: SearchResult[];
+    metrics: EnhancedRAGResult['v2Metrics'];
+  }> {
+    const embStart = Date.now();
+
+    // Generate hybrid embeddings (with caching)
+    const hybridEmbedding = await embeddingService.generateHybridEmbedding(query);
+    timing.embedding = Date.now() - embStart;
+
+    const searchStart = Date.now();
+
+    // Build namespaces to search
+    const namespaces = [
+      context.namespace,
+      ...(context.additionalNamespaces || []),
+    ];
+
+    // Use hybrid search service with RRF
+    const hybridResults = await hybridSearchService.search({
+      text: query,
+      namespaces,
+      topK: topK * 2, // Over-fetch for reranking
+      filters,
+      includeMetadata: true,
+    });
+
+    timing.search = Date.now() - searchStart;
+
+    // Rerank results using Cohere
+    const rerankStart = Date.now();
+    let rerankedResults: SearchResult[] = [];
+    let rerankInputCount = hybridResults.matches.length;
+    let rerankOutputCount = 0;
+
+    if (hybridResults.matches.length > 0) {
+      try {
+        const reranked = await rerankService.rerankPineconeResults(
+          query,
+          hybridResults.matches.map(r => ({
+            id: r.id,
+            score: r.score,
+            metadata: r.metadata as unknown as { searchable_text?: string; preview?: string },
+          })),
+          topK,
+          'searchable_text' // Use searchable_text for better reranking
+        );
+
+        rerankedResults = reranked.map(r => ({
+          id: r.id,
+          score: r.rerankScore,
+          metadata: r.metadata as unknown as VectorMetadata,
+        }));
+        rerankOutputCount = rerankedResults.length;
+      } catch (error) {
+        console.error('[Enhanced RAG V2] Reranking failed, using original order:', error);
+        // Fallback to hybrid results without reranking
+        rerankedResults = hybridResults.matches.slice(0, topK).map(r => ({
+          id: r.id,
+          score: r.score,
+          metadata: r.metadata as unknown as VectorMetadata,
+        }));
+        rerankOutputCount = rerankedResults.length;
+      }
+    }
+
+    timing.rerank = Date.now() - rerankStart;
+
+    console.log(`[Enhanced RAG V2] Hybrid search: ${hybridResults.totalFound} found, ${hybridResults.matches.length} fused -> ${rerankedResults.length} reranked (strategy: ${hybridResults.strategy})`);
+
+    return {
+      results: rerankedResults,
+      metrics: {
+        denseResultCount: hybridResults.totalFound,
+        sparseResultCount: 0, // Sparse not yet fully integrated
+        fusedResultCount: hybridResults.matches.length,
+        rerankInputCount,
+        rerankOutputCount,
+        cacheHit: hybridEmbedding.cached || false,
       },
     };
   }
@@ -513,6 +764,28 @@ export class EnhancedRAGService {
       return null;
     }
 
+    // For template disambiguation, parse the selection and update confirmed context
+    if (pending.clarificationType === 'template') {
+      const ambiguityOptions = pending.partialIntent?.extractedEntities?.ambiguityOptions as ClarificationOption[] | undefined;
+
+      if (ambiguityOptions) {
+        const parsed = ambiguityDetectionService.parseClarificationResponse(userQuery, ambiguityOptions);
+
+        if (parsed) {
+          console.log(`[Enhanced RAG] Template clarification: selected ${parsed.selectedTemplate} (${parsed.selectedMetadataType})`);
+
+          // Update confirmed context with the selected template
+          if (context.sessionId) {
+            const state = conversationStateService.getOrCreateState(context.sessionId, context.employeeId);
+            state.confirmedContext.templateType = parsed.selectedTemplate;
+          }
+
+          // Re-run original query with explicit template/filter
+          // The enhanceQueryWithClarification will add the template context
+        }
+      }
+    }
+
     // Enhance the original query with clarification response
     const enhancedQuery = this.enhanceQueryWithClarification(pending.originalQuery, userQuery, pending);
 
@@ -564,6 +837,26 @@ export class EnhancedRAGService {
     clarificationResponse: string,
     pending: PendingClarification
   ): string {
+    // For template clarification, add explicit template context
+    if (pending.clarificationType === 'template') {
+      const ambiguityOptions = pending.partialIntent?.extractedEntities?.ambiguityOptions as ClarificationOption[] | undefined;
+
+      if (ambiguityOptions) {
+        const parsed = ambiguityDetectionService.parseClarificationResponse(clarificationResponse, ambiguityOptions);
+
+        if (parsed?.selectedTemplate) {
+          // Map template to Korean context word
+          const templateContext: Record<string, string> = {
+            compensation: '급여명세',
+            mdrt: 'MDRT 달성현황',
+            general: '일반 정보',
+          };
+          const context = templateContext[parsed.selectedTemplate] || parsed.selectedTemplate;
+          return `${originalQuery} (${context})`;
+        }
+      }
+    }
+
     // Simple enhancement - combine original query with clarification
     return `${originalQuery} (${clarificationResponse})`;
   }
@@ -711,9 +1004,34 @@ export class EnhancedRAGService {
       console.log(`[Enhanced RAG] Period filter: ${periodYYYYMM} (or reportMonth: ${reportMonthFormat})`);
     }
 
-    // Metadata type filter
+    // Check for confirmed template from conversation state (disambiguation result)
+    // This takes precedence over intent-derived filters
+    if (context.sessionId) {
+      const confirmedContext = conversationStateService.getConfirmedContext(context.sessionId);
+      if (confirmedContext?.templateType) {
+        // Map template to metadataType
+        const templateToMetadataType: Record<string, string> = {
+          compensation: 'employee',
+          mdrt: 'mdrt',
+          general: 'generic',
+        };
+        const metadataTypeFromTemplate = templateToMetadataType[confirmedContext.templateType];
+        if (metadataTypeFromTemplate) {
+          andConditions.push({ metadataType: { $eq: metadataTypeFromTemplate } });
+          console.log(`[Enhanced RAG] Using confirmed template: ${confirmedContext.templateType} -> metadataType: ${metadataTypeFromTemplate}`);
+        }
+      }
+    }
+
+    // Metadata type filter (from intent, if not already set by confirmed context)
     if (intent.filters.metadataType) {
-      andConditions.push({ metadataType: { $eq: intent.filters.metadataType } });
+      // Only add if not already added from confirmed context
+      const hasMetadataTypeFilter = andConditions.some(
+        cond => cond && typeof cond === 'object' && 'metadataType' in cond
+      );
+      if (!hasMetadataTypeFilter) {
+        andConditions.push({ metadataType: { $eq: intent.filters.metadataType } });
+      }
     }
 
     // Chunk type filter

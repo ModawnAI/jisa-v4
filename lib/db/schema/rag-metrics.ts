@@ -223,6 +223,152 @@ export const clarificationSessionsRelations = relations(
   })
 );
 
+/**
+ * RAG Query Logs
+ * Detailed logs for each RAG query (V2 architecture)
+ */
+export const ragQueryLogs = pgTable(
+  'rag_query_logs',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+
+    // Session context
+    sessionId: text('session_id'),
+    userId: text('user_id'),
+
+    // Query and response
+    query: text('query').notNull(),
+    answer: text('answer').notNull(),
+
+    // Metrics (JSON for flexibility)
+    metrics: jsonb('metrics').$type<{
+      queryUnderstanding: { timeMs: number; expandedQueries: number };
+      broadRetrieval: { timeMs: number; denseResults: number; sparseResults: number; fusedResults: number };
+      reranking: { timeMs: number; model: string; inputCount: number; outputCount: number };
+      contextAssembly: { timeMs: number; chunksExpanded: number; tokensUsed: number };
+      generation: { timeMs: number; model: string; tokensIn: number; tokensOut: number };
+      total: { timeMs: number };
+    }>(),
+
+    // Result stats
+    resultCount: integer('result_count').default(0),
+    topScore: text('top_score'),
+    confidence: text('confidence'),
+
+    // Status
+    wasSuccessful: boolean('was_successful').default(true),
+    errorMessage: text('error_message'),
+
+    // Audit
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('idx_rag_query_logs_session').on(table.sessionId),
+    index('idx_rag_query_logs_user').on(table.userId),
+    index('idx_rag_query_logs_created').on(table.createdAt),
+    index('idx_rag_query_logs_successful').on(table.wasSuccessful),
+  ]
+);
+
+/**
+ * RAG Daily Metrics
+ * Aggregated daily statistics for monitoring
+ */
+export const ragDailyMetrics = pgTable(
+  'rag_daily_metrics',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+
+    // Date (stored as date string YYYY-MM-DD)
+    date: text('date').notNull().unique(),
+
+    // Volume
+    totalQueries: integer('total_queries').default(0),
+    successfulQueries: integer('successful_queries').default(0),
+
+    // Latency (stored as JSON for percentiles)
+    avgLatencyMs: real('avg_latency_ms'),
+    p50LatencyMs: real('p50_latency_ms'),
+    p95LatencyMs: real('p95_latency_ms'),
+    p99LatencyMs: real('p99_latency_ms'),
+
+    // Quality metrics
+    avgResultCount: real('avg_result_count'),
+    avgConfidence: real('avg_confidence'),
+    avgTopScore: real('avg_top_score'),
+
+    // Cache metrics
+    cacheHitRate: real('cache_hit_rate'),
+    embeddingCacheHits: integer('embedding_cache_hits').default(0),
+    embeddingCacheMisses: integer('embedding_cache_misses').default(0),
+
+    // Stage breakdown (JSON for flexibility)
+    stageMetrics: jsonb('stage_metrics').$type<{
+      queryUnderstanding: { avgMs: number; p95Ms: number };
+      retrieval: { avgMs: number; p95Ms: number };
+      reranking: { avgMs: number; p95Ms: number };
+      generation: { avgMs: number; p95Ms: number };
+    }>(),
+
+    // Audit
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('idx_rag_daily_metrics_date').on(table.date),
+  ]
+);
+
+/**
+ * Processing Checkpoints
+ * Tracks document processing progress for resumable uploads
+ */
+export const processingCheckpoints = pgTable(
+  'processing_checkpoints',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+
+    // Document reference
+    documentId: uuid('document_id').notNull(),
+    batchId: uuid('batch_id'),
+
+    // Progress tracking
+    lastProcessedChunk: integer('last_processed_chunk').default(0),
+    totalChunks: integer('total_chunks').notNull(),
+
+    // Status
+    status: text('status').$type<'in_progress' | 'completed' | 'failed' | 'paused'>().notNull(),
+    errorMessage: text('error_message'),
+    retryCount: integer('retry_count').default(0),
+
+    // Checkpoint data (serialized state)
+    checkpointData: jsonb('checkpoint_data').$type<{
+      lastVectorIds?: string[];
+      processedRows?: number[];
+      partialResults?: unknown;
+    }>(),
+
+    // Audit
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index('idx_processing_checkpoints_document').on(table.documentId),
+    index('idx_processing_checkpoints_batch').on(table.batchId),
+    index('idx_processing_checkpoints_status').on(table.status),
+  ]
+);
+
 // Types
 export type RagMetric = typeof ragMetrics.$inferSelect;
 export type NewRagMetric = typeof ragMetrics.$inferInsert;
@@ -232,3 +378,12 @@ export type NewSchemaDiscoveryLog = typeof schemaDiscoveryLogs.$inferInsert;
 
 export type ClarificationSession = typeof clarificationSessions.$inferSelect;
 export type NewClarificationSession = typeof clarificationSessions.$inferInsert;
+
+export type RagQueryLog = typeof ragQueryLogs.$inferSelect;
+export type NewRagQueryLog = typeof ragQueryLogs.$inferInsert;
+
+export type RagDailyMetric = typeof ragDailyMetrics.$inferSelect;
+export type NewRagDailyMetric = typeof ragDailyMetrics.$inferInsert;
+
+export type ProcessingCheckpoint = typeof processingCheckpoints.$inferSelect;
+export type NewProcessingCheckpoint = typeof processingCheckpoints.$inferInsert;
