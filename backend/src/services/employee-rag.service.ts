@@ -236,7 +236,7 @@ ${context}
 
   try {
     const response = await genai.models.generateContent({
-      model: 'gemini-flash-latest',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
     });
 

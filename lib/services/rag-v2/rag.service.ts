@@ -40,7 +40,7 @@ function getGeminiClient(): GoogleGenAI {
 
 // Configuration
 const RAG_CONFIG = {
-  model: 'gemini-2.0-flash',
+  model: 'gemini-3-flash-preview',
   maxContextTokens: 30000,
   maxOutputTokens: 2000,
   temperature: 0.3,

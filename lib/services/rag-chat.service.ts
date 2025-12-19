@@ -87,7 +87,7 @@ export class RAGChatService {
     // Generate response using @google/genai
     const ai = getGenAI();
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         temperature: options.temperature ?? 0.7,
@@ -127,7 +127,7 @@ export class RAGChatService {
     // Stream response using @google/genai
     const ai = getGenAI();
     const stream = await ai.models.generateContentStream({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         temperature: options.temperature ?? 0.7,

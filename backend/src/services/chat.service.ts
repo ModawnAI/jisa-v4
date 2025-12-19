@@ -212,7 +212,7 @@ CRITICAL 백분율 표시 규칙:
         };
 
         const response = await genai.models.generateContent({
-          model: 'gemini-flash-latest',
+          model: 'gemini-3-flash-preview',
           config: genConfig,
           contents,
         });

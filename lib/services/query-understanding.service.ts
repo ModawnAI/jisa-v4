@@ -29,7 +29,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
 // Default configuration
 const DEFAULT_CONFIG = {
-  model: 'gemini-flash-latest',
+  model: 'gemini-3-flash-preview',
   maxRetries: 2,
 };
 

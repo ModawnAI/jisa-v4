@@ -83,7 +83,7 @@ const CONFIG = {
   relevanceThreshold: 0.35,
   defaultTopK: 10,
   maxContextLength: 8000,
-  model: 'gemini-flash-latest',
+  model: 'gemini-3-flash-preview',
 };
 
 /**

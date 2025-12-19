@@ -198,7 +198,7 @@ Return ONLY valid JSON, no markdown.`;
 
   try {
     const response = await genai.models.generateContent({
-      model: 'gemini-flash-latest',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
     });
 
@@ -355,7 +355,7 @@ ${formattingInstructions}
 
   try {
     const response = await genai.models.generateContent({
-      model: 'gemini-flash-latest',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
     });
 

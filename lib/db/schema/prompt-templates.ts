@@ -61,7 +61,7 @@ export const promptTemplates = pgTable('prompt_templates', {
 
   // Model configuration
   modelConfig: jsonb('model_config').$type<ModelConfig>().default({
-    model: 'gemini-2.0-flash',
+    model: 'gemini-3-flash-preview',
     temperature: 0.7,
     maxOutputTokens: 1024,
   }),

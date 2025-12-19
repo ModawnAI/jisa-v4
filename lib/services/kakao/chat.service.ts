@@ -221,7 +221,7 @@ CRITICAL 백분율 표시 규칙:
 
           const genai = getGenAIClient();
           const response = await genai.models.generateContent({
-            model: 'gemini-2.0-flash',
+            model: 'gemini-3-flash-preview',
             contents: `${systemPrompt}\n\n질문: ${prompt}`,
           });
 

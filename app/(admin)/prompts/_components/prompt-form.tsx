@@ -53,7 +53,8 @@ const PROMPT_CATEGORY_OPTIONS = [
 ];
 
 const GEMINI_MODELS = [
-  { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash (추천)' },
+  { value: 'gemini-3-flash-preview', label: 'Gemini 3 Flash Preview (추천)' },
+  { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
   { value: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite' },
   { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
   { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
@@ -125,7 +126,7 @@ export function PromptForm({ template }: PromptFormProps) {
       content: template?.content ?? '',
       variables: (template?.variables as PromptVariable[]) ?? [],
       modelConfig: {
-        model: template?.modelConfig?.model ?? 'gemini-2.0-flash',
+        model: template?.modelConfig?.model ?? 'gemini-3-flash-preview',
         temperature: template?.modelConfig?.temperature ?? 0.7,
         maxOutputTokens: template?.modelConfig?.maxOutputTokens ?? 1024,
         topP: template?.modelConfig?.topP,

@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
         category: category || 'kakao_chat',
         content,
         variables: variables || [],
-        modelConfig: modelConfig || { model: 'gemini-2.0-flash', temperature: 0.7, maxOutputTokens: 1024 },
+        modelConfig: modelConfig || { model: 'gemini-3-flash-preview', temperature: 0.7, maxOutputTokens: 1024 },
         isDefault: isDefault || false,
         isActive: true,
       },
