@@ -7,8 +7,8 @@ import { footerContent, navContent } from '@/lib/landing/content';
 export function MarketingFooter() {
   return (
     <footer className="border-t border-border bg-card">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Company Info */}
           <div className="lg:col-span-2">
             <Link href="/" className="mb-4 flex items-center gap-2">
@@ -119,8 +119,8 @@ export function MarketingFooter() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-12 border-t border-border pt-8">
-          <p className="text-center text-sm text-muted-foreground">
+        <div className="mt-8 border-t border-border pt-6 sm:mt-12 sm:pt-8">
+          <p className="text-center text-xs text-muted-foreground sm:text-sm">
             {footerContent.copyright}
           </p>
         </div>

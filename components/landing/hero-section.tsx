@@ -115,14 +115,14 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.25 }}
-            className="mt-8 flex flex-wrap items-center justify-center gap-8 md:gap-12"
+            className="mt-8 flex flex-wrap items-center justify-center gap-6 sm:gap-8 md:gap-12"
           >
             {heroContent.stats.map((stat, idx) => (
               <div key={idx} className="text-center">
-                <div className="text-3xl font-bold text-primary md:text-4xl">
+                <div className="text-2xl font-bold text-primary sm:text-3xl md:text-4xl">
                   {stat.value}
                 </div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
+                <div className="text-xs text-muted-foreground sm:text-sm">{stat.label}</div>
               </div>
             ))}
           </motion.div>
@@ -136,7 +136,7 @@ export function HeroSection() {
           >
             <Link
               href="#cta"
-              className="group relative inline-flex h-14 items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"
+              className="group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30 sm:h-14 sm:px-8 sm:text-base"
             >
               <span className="relative z-10 flex items-center gap-2">
                 {heroContent.primaryCta}
@@ -155,15 +155,16 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="relative mt-16 w-full max-w-xl"
+            className="relative mt-12 w-full max-w-xl sm:mt-16"
           >
             <KakaoChatMockup
               messages={heroMessages}
               className="shadow-2xl"
+              compact
             />
 
             {/* Glow effect */}
-            <div className="absolute -inset-x-20 -bottom-20 h-40 bg-gradient-to-t from-background via-background/80 to-transparent" />
+            <div className="absolute -inset-x-10 -bottom-16 h-32 bg-gradient-to-t from-background via-background/80 to-transparent sm:-inset-x-20 sm:-bottom-20 sm:h-40" />
           </motion.div>
         </div>
       </div>

@@ -63,7 +63,7 @@ export function SolutionSection() {
         </div>
 
         {/* Sub features - 3 column grid */}
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-3 sm:gap-4">
           {subFeatures.map((item, i) => {
             const Icon = iconMap[item.icon as keyof typeof iconMap];
             return (
@@ -73,16 +73,17 @@ export function SolutionSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
                 viewport={{ once: true }}
-                className="group flex items-start gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/30 hover:shadow-md"
+                className="group flex items-start gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-md sm:gap-4 sm:p-5"
               >
-                <div className="shrink-0 rounded-lg bg-primary/10 p-3">
-                  <Icon size={24} weight="duotone" className="text-primary" />
+                <div className="shrink-0 rounded-lg bg-primary/10 p-2.5 sm:p-3">
+                  <Icon size={20} weight="duotone" className="text-primary sm:hidden" />
+                  <Icon size={24} weight="duotone" className="hidden text-primary sm:block" />
                 </div>
                 <div>
-                  <h4 className="mb-1 font-semibold text-foreground">
+                  <h4 className="mb-0.5 text-sm font-semibold text-foreground sm:mb-1 sm:text-base">
                     {item.title}
                   </h4>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs text-muted-foreground sm:text-sm">
                     {item.description}
                   </p>
                 </div>

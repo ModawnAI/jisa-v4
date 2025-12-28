@@ -34,7 +34,7 @@ export function PricingSection() {
           {/* Price */}
           <div className="mb-8 text-center">
             <div className="mb-2 flex items-baseline justify-center gap-1">
-              <span className="text-6xl font-bold text-primary md:text-7xl">
+              <span className="text-5xl font-bold text-primary sm:text-6xl md:text-7xl">
                 {pricingContent.price.amount}
               </span>
               <span className="text-2xl font-medium text-foreground">
@@ -70,7 +70,7 @@ export function PricingSection() {
           <div className="flex flex-col items-center gap-4 text-center">
             <Link
               href="/signup"
-              className="group relative inline-flex h-14 items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-10 text-lg font-bold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"
+              className="group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-6 text-base font-bold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30 sm:h-14 sm:px-10 sm:text-lg"
             >
               <span className="relative z-10 flex items-center gap-2">
                 {pricingContent.cta}

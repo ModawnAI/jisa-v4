@@ -36,15 +36,15 @@ export function FaqSection() {
             >
               <button
                 onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
-                className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition-colors hover:bg-accent/50"
+                className="flex w-full items-center justify-between gap-3 px-4 py-4 text-left transition-colors hover:bg-accent/50 sm:gap-4 sm:px-6 sm:py-5"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 flex-1 items-start gap-2 sm:items-center sm:gap-3">
                   <Question
                     size={20}
                     weight="duotone"
-                    className="shrink-0 text-primary"
+                    className="mt-0.5 shrink-0 text-primary sm:mt-0"
                   />
-                  <span className="font-medium text-foreground">
+                  <span className="text-sm font-medium text-foreground sm:text-base">
                     {faq.question}
                   </span>
                 </div>
@@ -64,8 +64,8 @@ export function FaqSection() {
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <div className="border-t border-border bg-muted/30 px-6 py-5">
-                      <p className="text-muted-foreground">{faq.answer}</p>
+                    <div className="border-t border-border bg-muted/30 px-4 py-4 sm:px-6 sm:py-5">
+                      <p className="text-sm text-muted-foreground sm:text-base">{faq.answer}</p>
                     </div>
                   </motion.div>
                 )}

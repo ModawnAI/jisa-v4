@@ -102,8 +102,8 @@ export function InfiniteMovingCards({
             key={`${item.name}-${idx}`}
             className={cn(
               type === 'logo'
-                ? 'flex h-16 w-40 items-center justify-center rounded-lg bg-card px-4'
-                : 'relative w-[350px] max-w-full shrink-0 rounded-2xl border border-border bg-card px-8 py-6',
+                ? 'flex h-16 w-32 items-center justify-center rounded-lg bg-card px-3 sm:w-40 sm:px-4'
+                : 'relative w-[280px] max-w-[85vw] shrink-0 rounded-2xl border border-border bg-card px-6 py-5 sm:w-[350px] sm:px-8 sm:py-6',
               itemClassName
             )}
           >

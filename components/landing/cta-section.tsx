@@ -41,7 +41,7 @@ export function CtaSection() {
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href="/signup"
-              className="group relative inline-flex h-14 items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"
+              className="group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30 sm:h-14 sm:px-8 sm:text-base"
             >
               <span className="relative z-10 flex items-center gap-2">
                 {ctaContent.primaryCta}
@@ -56,7 +56,7 @@ export function CtaSection() {
 
             <a
               href="mailto:info@modawn.ai"
-              className="flex h-14 items-center gap-2 rounded-full border border-border bg-background px-6 font-medium text-foreground transition-colors hover:bg-accent"
+              className="flex h-12 items-center gap-2 rounded-full border border-border bg-background px-5 text-sm font-medium text-foreground transition-colors hover:bg-accent sm:h-14 sm:px-6 sm:text-base"
             >
               <Envelope size={18} />
               <span>{ctaContent.secondaryCta}</span>
@@ -70,11 +70,11 @@ export function CtaSection() {
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
           viewport={{ once: true }}
-          className="mt-16 flex flex-wrap items-center justify-center gap-8 text-muted-foreground"
+          className="mt-12 flex flex-wrap items-center justify-center gap-4 text-muted-foreground sm:mt-16 sm:gap-8"
         >
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-1.5 text-xs sm:gap-2 sm:text-sm">
             <svg
-              className="h-5 w-5 text-green-500"
+              className="h-4 w-4 text-green-500 sm:h-5 sm:w-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -88,9 +88,9 @@ export function CtaSection() {
             </svg>
             <span>신용카드 불필요</span>
           </div>
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-1.5 text-xs sm:gap-2 sm:text-sm">
             <svg
-              className="h-5 w-5 text-green-500"
+              className="h-4 w-4 text-green-500 sm:h-5 sm:w-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -104,9 +104,9 @@ export function CtaSection() {
             </svg>
             <span>즉시 시작</span>
           </div>
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-1.5 text-xs sm:gap-2 sm:text-sm">
             <svg
-              className="h-5 w-5 text-green-500"
+              className="h-4 w-4 text-green-500 sm:h-5 sm:w-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

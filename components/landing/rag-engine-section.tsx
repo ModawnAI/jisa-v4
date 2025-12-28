@@ -105,7 +105,7 @@ export function RagEngineSection() {
         </motion.div>
 
         {/* RAG Features Grid */}
-        <div className="mb-16 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="mb-16 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
           {ragEngineContent.features.map((feature, idx) => {
             const Icon = iconMap[feature.icon as keyof typeof iconMap];
             return (
@@ -141,19 +141,19 @@ export function RagEngineSection() {
           <h3 className="mb-6 text-center text-lg font-semibold text-foreground">
             5가지 질문 유형 자동 인식
           </h3>
-          <div className="flex flex-wrap justify-center gap-3">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
             {ragEngineContent.intentTypes.map((intent, idx) => (
               <div
                 key={idx}
                 className={cn(
-                  'group relative overflow-hidden rounded-full border px-4 py-2 transition-all',
+                  'group relative overflow-hidden rounded-full border px-3 py-1.5 transition-all sm:px-4 sm:py-2',
                   'border-border bg-background/80 hover:border-primary/50 hover:bg-primary/5'
                 )}
               >
-                <span className="mr-2 font-medium text-primary">
+                <span className="mr-1.5 text-sm font-medium text-primary sm:mr-2 sm:text-base">
                   {intent.label}
                 </span>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs text-muted-foreground sm:text-sm">
                   {intent.example}
                 </span>
               </div>

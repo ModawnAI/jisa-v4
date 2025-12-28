@@ -87,15 +87,15 @@ export function SocialProof() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
           viewport={{ once: true }}
-          className="mt-10 flex flex-wrap items-center justify-center gap-4"
+          className="mt-8 flex flex-wrap items-center justify-center gap-2 sm:mt-10 sm:gap-4"
         >
           {['E2EE 암호화', '금융권 보안', 'SOC 2 준수', '개인정보보호'].map(
             (badge, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary"
+                className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 text-[10px] font-medium text-primary sm:px-3 sm:py-1 sm:text-xs"
               >
-                <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
+                <span className="mr-1 h-1 w-1 rounded-full bg-primary sm:mr-1.5 sm:h-1.5 sm:w-1.5" />
                 {badge}
               </span>
             )
