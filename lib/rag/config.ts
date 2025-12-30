@@ -14,12 +14,46 @@ export const PINECONE_CONFIG = {
 } as const;
 
 // Namespace Strategy (organized by category slug)
+// All namespaces from hof-notices index
 export const NAMESPACES = {
+  // Notice boards
   NOTICE_MD: 'notice-md',
+  NOTICE_MD_DATA: 'notice-md-data',
   NOTICE_BMMD: 'notice-bmmd',
+  NOTICE_BMMD_DATA: 'notice-bmmd-data',
+  NOTICE_IMPORTANT: 'notice-important',
+
+  // HR & Exam
+  HR_NOTICE: 'hr-notice',
   HR_EXAM: 'hr-exam',
+  HR_SCHEDULE: 'hr-schedule',
+
+  // Education
+  EDUCATION_NOTICE: 'education-notice',
+  EDUCATION_PARTNER: 'education-partner',
+  EDUCATION_STRATEGY: 'education-strategy',
+  EDUCATION_INTERNAL: 'education-internal',
+
+  // Sales
   SALES_DB_NOTICE: 'sales-db-notice',
-  GENERAL: 'general',
+  SALES_PAY_NOTICE: 'sales-pay-notice',
+
+  // Data & Reports
+  DATA_HELPFUL: 'data-helpful',
+  DATA_MONTHLY: 'data-monthly',
+  DATA_PERFORMANCE: 'data-performance',
+  DATA_COMPARISON: 'data-comparison',
+  DATA_FORMS: 'data-forms',
+
+  // System
+  SYSTEM_NOTICE: 'system-notice',
+  SYSTEM_PROMO: 'system-promo',
+  SYSTEM_RULES: 'system-rules',
+
+  // Events
+  EVENTS: 'events',
+  EVENTS_HOPC: 'events-hopc',
+  EVENTS_SEMINAR: 'events-seminar',
 } as const;
 
 export const ALL_NAMESPACES = Object.values(NAMESPACES);

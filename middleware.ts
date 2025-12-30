@@ -23,6 +23,7 @@ const publicApiRoutes = [
   '/api/auth',
   '/api/inngest', // Inngest webhook endpoint
   '/api/kakao', // KakaoTalk webhook proxy endpoint
+  '/api/rag', // RAG API endpoints
 ];
 
 export async function middleware(request: NextRequest) {

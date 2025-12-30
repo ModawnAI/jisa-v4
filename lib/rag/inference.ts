@@ -408,17 +408,17 @@ function buildAttachmentContext(results: RAGSearchResult[]): string {
     let attachmentSection = `\n[${result.title}]\n`;
 
     for (const attachment of result.attachments) {
-      const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].some(
-        (ext) => attachment.filename.toLowerCase().endsWith(ext)
+      const isImage = attachment.isImage || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].some(
+        (ext) => attachment.fileName?.toLowerCase().endsWith(ext)
       );
 
       if (isImage) {
-        attachmentSection += `- 이미지: ${attachment.filename}\n`;
+        attachmentSection += `- 이미지: ${attachment.fileName}\n`;
         if (attachment.description) {
           attachmentSection += `  설명: ${attachment.description}\n`;
         }
       } else {
-        attachmentSection += `- 문서: ${attachment.filename}\n`;
+        attachmentSection += `- 문서: ${attachment.fileName}\n`;
         if (attachment.description) {
           attachmentSection += `  설명: ${attachment.description}\n`;
         }

@@ -57,12 +57,13 @@ export interface PineconeQueryResult {
 }
 
 // Attachment info (parsed from attachmentsJson)
+// Note: Uses camelCase to match the actual JSON structure from Pinecone
 export interface AttachmentInfo {
   id: string;
-  filename: string;
-  url: string;
-  mimeType: string;
-  size: number;
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  isImage?: boolean;
   description?: string; // AI-generated description
 }
 
