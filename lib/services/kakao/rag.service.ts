@@ -1,13 +1,16 @@
 /**
  * RAG Service for KakaoTalk Chatbot
- * Retrieval-Augmented Generation using Pinecone + OpenAI + Gemini
+ * Retrieval-Augmented Generation using Pinecone + OpenAI + Gemini + Cohere
  *
- * Pipeline:
- * 1. User Query -> Gemini Flash (query enhancement with metadata_key.json)
- * 2. Enhanced Query -> OpenAI Embeddings -> Pinecone (retrieve top K results)
- * 3. Retrieved Context -> Gemini Flash (generate final answer)
- *
- * Migrated from: backend/src/services/rag.service.ts
+ * NEW 8-Step Pipeline (based on RAG-SYSTEM-ARCHITECTURE.md):
+ * 1. Embedding Generation (OpenAI text-embedding-3-large)
+ * 2. Vector Search (Pinecone) - query all namespaces in parallel
+ * 3. Deduplication - keep highest scoring chunk per postId
+ * 4. Cohere Reranking - rerank-v3.5
+ * 5. Recency Boost - time-based multipliers
+ * 6. Priority Sorting - pinned > important > regular
+ * 7. Context Building - formatted content + attachments
+ * 8. Gemini Inference - generate response
  */
 
 import { GoogleGenAI } from '@google/genai';
@@ -15,6 +18,7 @@ import { Pinecone } from '@pinecone-database/pinecone';
 import { createEmbedding } from '@/lib/utils/embedding';
 import { createClient as createServiceClient } from '@/lib/supabase/server';
 import { rbacService } from '@/lib/services/kakao/rbac.service';
+import { ragQuery as hofRagQuery, search as hofSearch } from '@/lib/rag';
 import metadataKeyConfig from '@/lib/config/metadata-key.json';
 import pdfUrlsConfig from '@/lib/config/pdf-urls.json';
 import type {
@@ -457,79 +461,68 @@ ${formattingInstructions}
 
 /**
  * Complete RAG Pipeline - Main Entry Point (without RBAC)
+ *
+ * NEW: Uses the 8-step HOF RAG pipeline from RAG-SYSTEM-ARCHITECTURE.md:
+ * 1. Embedding Generation (OpenAI text-embedding-3-large)
+ * 2. Vector Search (Pinecone) - query all namespaces in parallel
+ * 3. Deduplication - keep highest scoring chunk per postId
+ * 4. Cohere Reranking - rerank-v3.5
+ * 5. Recency Boost - time-based multipliers
+ * 6. Priority Sorting - pinned > important > regular
+ * 7. Context Building - formatted content + attachments
+ * 8. Gemini Inference - generate response
  */
 export async function ragAnswer(userQuery: string, topK: number = 10): Promise<string> {
   try {
     console.log(`\n[RAG] Query: ${userQuery}`);
+    console.log('[RAG] Using NEW 8-step HOF RAG pipeline');
 
-    // Step 1: Load metadata and enhance query
-    console.log('[RAG] Step 1: Query Enhancement');
-    const metadataKey = getMetadataKey();
-    const geminiFlashOutput = await enhanceQueryWithGeminiFlash(userQuery, metadataKey);
+    // Use the new HOF RAG pipeline
+    const result = await hofRagQuery(userQuery, {
+      topK: 30, // Fetch more for reranking
+      rerank: true,
+      rerankTopN: topK,
+      recencyBoost: true,
+      includePinnedFirst: true,
+    });
 
-    console.log(`[RAG] Enhanced query: ${geminiFlashOutput.enhanced_query}`);
-    if (geminiFlashOutput.filters) {
-      console.log(`[RAG] Filters: ${JSON.stringify(geminiFlashOutput.filters, null, 2)}`);
-    }
+    console.log(`[RAG] Pipeline completed in ${result.latencyMs}ms`);
+    console.log(`[RAG] Sources: ${result.sources.length}`);
 
-    // Step 2: Generate embedding
-    console.log('[RAG] Step 2: Embedding Generation');
-    const embedding = await generateEmbedding(geminiFlashOutput.enhanced_query);
-    console.log(`[RAG] Embedding generated (${embedding.length} dims)`);
-
-    // Step 3: Retrieve from Pinecone (search both main and public namespaces)
-    console.log(`[RAG] Step 3: Pinecone Search (namespaces: ${NAMESPACE}, ${PUBLIC_NAMESPACE}, top ${topK})`);
-    let results = await searchMultipleNamespaces(embedding, geminiFlashOutput.filters, topK);
-
-    console.log(`[RAG] Found ${results.matches.length} documents`);
-
-    // Fallback: If no results with filters, retry without filters
-    if (results.matches.length === 0 && geminiFlashOutput.filters !== null) {
-      console.log('[RAG] No results with filters - retrying without filters...');
-      results = await searchMultipleNamespaces(embedding, null, topK);
-      console.log(`[RAG] Found ${results.matches.length} documents (pure semantic search)`);
-    }
-
-    // Check relevance scores
-    if (results.matches.length > 0) {
-      const maxScore = Math.max(...results.matches.map(m => m.score));
-      console.log(`[RAG] Max relevance score: ${maxScore.toFixed(3)}`);
-
-      if (maxScore < RELEVANCE_THRESHOLD) {
-        console.log('[RAG] Low relevance detected');
-        return `안녕하세요. 모드온 AI입니다.
+    // If no results, provide helpful message
+    if (result.sources.length === 0) {
+      return `안녕하세요. 모드온 AI입니다.
 
 질문하신 내용과 관련된 정보를 찾기 어렵습니다.
 
 구체적인 질문을 해주시면 더 정확한 답변을 드릴 수 있습니다.
 
 예시:
-- 11월 워크샵 일정 알려줘
-- 삼성화재 프로모션 정보
-- 신입 FC 교육 일정
+- 12월 정착지원금 신청 방법
+- 변액보험 시험 일정
+- MD 공지사항 확인
 
 무엇을 도와드릴까요?`;
-      }
     }
 
-    // Step 4: Format context
-    const formattedContext = formatContext(results);
+    // Build PDF attachment info from sources
+    const pdfResults: PineconeQueryResult = {
+      matches: result.sources.map(s => ({
+        id: s.postId,
+        score: s.score,
+        metadata: s.metadata as unknown as Record<string, unknown>,
+      })) as PineconeMatch[],
+    };
 
-    // Step 5: Generate answer with Gemini
-    console.log('[RAG] Step 4: Answer Generation');
-    const answer = await generateAnswerWithGemini(userQuery, formattedContext);
-
-    console.log(`[RAG] Answer generated (${answer.length} chars)`);
-
-    // Step 6: Attach relevant PDFs
-    const relevantPdfs = getRelevantPdfs(userQuery, results);
+    // Attach relevant PDFs
+    const relevantPdfs = getRelevantPdfs(userQuery, pdfResults);
     if (relevantPdfs.length > 0) {
       const pdfAttachments = formatPdfAttachments(relevantPdfs);
       console.log(`[RAG] Attached ${relevantPdfs.length} PDFs\n`);
-      return answer + pdfAttachments;
+      return result.answer + pdfAttachments;
     }
 
-    return answer;
+    return result.answer;
   } catch (error) {
     console.error('[RAG] Error:', error);
     return `죄송합니다. 답변을 생성하는 중 오류가 발생했습니다: ${error instanceof Error ? error.message : String(error)}`;
@@ -538,6 +531,8 @@ export async function ragAnswer(userQuery: string, topK: number = 10): Promise<s
 
 /**
  * RAG Answer with RBAC filtering
+ *
+ * NEW: Uses the 8-step HOF RAG pipeline with RBAC overlay
  */
 export async function ragAnswerWithRBAC(
   userQuery: string,
@@ -546,48 +541,56 @@ export async function ragAnswerWithRBAC(
 ): Promise<string> {
   try {
     console.log('[RAG-RBAC] Starting RAG with RBAC for user:', userId);
+    console.log('[RAG-RBAC] Using NEW 8-step HOF RAG pipeline');
 
-    // Step 1: Load metadata
-    const metadataKey = getMetadataKey();
+    // Use the new HOF RAG pipeline
+    const result = await hofRagQuery(userQuery, {
+      topK: 30, // Fetch more for reranking
+      rerank: true,
+      rerankTopN: topK,
+      recencyBoost: true,
+      includePinnedFirst: true,
+    });
 
-    // Step 2: Enhance query
-    console.log('[RAG-RBAC] Step 1: Query Enhancement');
-    const enhanced = await enhanceQueryWithGeminiFlash(userQuery, metadataKey);
+    console.log(`[RAG-RBAC] Pipeline completed in ${result.latencyMs}ms`);
+    console.log(`[RAG-RBAC] Sources: ${result.sources.length}`);
 
-    // Step 3: Generate embedding
-    console.log('[RAG-RBAC] Step 2: Embedding Generation');
-    const embedding = await generateEmbedding(enhanced.enhanced_query);
+    // If no results, provide helpful message
+    if (result.sources.length === 0) {
+      return `안녕하세요. 모드온 AI입니다.
 
-    // Step 4: Search with RBAC
-    console.log('[RAG-RBAC] Step 3: Pinecone Search with RBAC');
-    const results = await searchPineconeWithRBAC(
-      embedding,
-      enhanced.filters,
-      userId,
-      topK
-    );
+질문하신 내용과 관련된 정보를 찾기 어렵습니다.
 
-    console.log(`[RAG-RBAC] Found ${results.matches.length} accessible results`);
+구체적인 질문을 해주시면 더 정확한 답변을 드릴 수 있습니다.
 
-    // Step 5: Format context
-    const context = formatContext(results);
+예시:
+- 12월 정착지원금 신청 방법
+- 변액보험 시험 일정
+- MD 공지사항 확인
 
-    // Step 6: Get PDFs
-    const pdfs = getRelevantPdfs(userQuery, results);
+무엇을 도와드릴까요?`;
+    }
 
-    // Step 7: Generate answer
-    console.log('[RAG-RBAC] Step 4: Answer Generation');
-    const answer = await generateAnswerWithGemini(userQuery, context);
+    // Build PDF attachment info from sources
+    const pdfResults: PineconeQueryResult = {
+      matches: result.sources.map(s => ({
+        id: s.postId,
+        score: s.score,
+        metadata: s.metadata as unknown as Record<string, unknown>,
+      })) as PineconeMatch[],
+    };
 
-    // Step 8: Attach PDFs
-    let finalAnswer = answer;
-    if (pdfs.length > 0) {
-      finalAnswer += formatPdfAttachments(pdfs);
+    // Attach relevant PDFs
+    const relevantPdfs = getRelevantPdfs(userQuery, pdfResults);
+    let finalAnswer = result.answer;
+    if (relevantPdfs.length > 0) {
+      finalAnswer += formatPdfAttachments(relevantPdfs);
+      console.log(`[RAG-RBAC] Attached ${relevantPdfs.length} PDFs`);
     }
 
     // Log query
     if (userId) {
-      await logRAGQuery(userId, userQuery, finalAnswer, results.matches.length);
+      await logRAGQuery(userId, userQuery, finalAnswer, result.sources.length);
     }
 
     return finalAnswer;

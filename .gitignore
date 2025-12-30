@@ -55,6 +55,5 @@ playwright-report/
 test-results/
 
 # Local development
-rag
 claudedocs/
 .claude/
