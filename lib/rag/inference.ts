@@ -436,57 +436,38 @@ function buildAttachmentContext(results: RAGSearchResult[]): string {
 /**
  * Format attachments for final response (user-facing download links)
  * Pure text formatting for KakaoTalk
+ * Only includes top 2 most relevant attachments from the first source with attachments
  */
 function formatAttachmentsForResponse(results: RAGSearchResult[]): string {
-  const allAttachments: Array<{
-    title: string;
-    fileName: string;
-    fileUrl: string;
-    isImage: boolean;
-  }> = [];
+  // Find the first (most relevant) source that has attachments
+  const sourceWithAttachments = results.find(
+    r => r.attachments && r.attachments.length > 0
+  );
 
-  for (const result of results) {
-    if (!result.attachments || result.attachments.length === 0) continue;
-
-    for (const att of result.attachments) {
-      if (!att.fileUrl) continue;
-
-      const isImage = att.isImage || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].some(
-        ext => att.fileName?.toLowerCase().endsWith(ext)
-      );
-
-      allAttachments.push({
-        title: result.title,
-        fileName: att.fileName || '첨부파일',
-        fileUrl: att.fileUrl,
-        isImage,
-      });
-    }
-  }
-
-  if (allAttachments.length === 0) {
+  if (!sourceWithAttachments || !sourceWithAttachments.attachments) {
     return '';
   }
 
-  // Group by source title
-  const byTitle = new Map<string, typeof allAttachments>();
-  for (const att of allAttachments) {
-    const existing = byTitle.get(att.title) || [];
-    existing.push(att);
-    byTitle.set(att.title, existing);
+  // Get top 2 attachments from the most relevant source
+  const topAttachments = sourceWithAttachments.attachments
+    .filter(att => att.fileUrl)
+    .slice(0, 2);
+
+  if (topAttachments.length === 0) {
+    return '';
   }
+
+  const shortTitle = sourceWithAttachments.title.length > 35
+    ? sourceWithAttachments.title.slice(0, 35) + '...'
+    : sourceWithAttachments.title;
 
   let attachmentText = '\n\n────────────────────\n';
   attachmentText += '첨부파일 다운로드\n\n';
+  attachmentText += `[${shortTitle}]\n`;
 
-  for (const [title, attachments] of byTitle) {
-    const shortTitle = title.length > 35 ? title.slice(0, 35) + '...' : title;
-    attachmentText += `[${shortTitle}]\n`;
-
-    for (const att of attachments) {
-      attachmentText += `  ${att.fileName}\n`;
-      attachmentText += `  ${att.fileUrl}\n\n`;
-    }
+  for (const att of topAttachments) {
+    attachmentText += `  ${att.fileName || '첨부파일'}\n`;
+    attachmentText += `  ${att.fileUrl}\n\n`;
   }
 
   return attachmentText;
