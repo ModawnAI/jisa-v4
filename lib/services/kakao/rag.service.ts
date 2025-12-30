@@ -133,12 +133,81 @@ export function formatPdfAttachments(pdfs: PdfAttachment[]): string {
     return '';
   }
 
-  let attachmentText = '\n\n' + '─'.repeat(60) + '\n';
-  attachmentText += '참고 자료\n\n';
+  let attachmentText = '\n\n' + '─'.repeat(40) + '\n';
+  attachmentText += '📎 참고 자료\n\n';
 
   for (const pdf of pdfs) {
     attachmentText += `${pdf.description}\n`;
-    attachmentText += `링크: ${pdf.url}\n\n`;
+    attachmentText += `${pdf.url}\n\n`;
+  }
+
+  return attachmentText;
+}
+
+/**
+ * Format HOF RAG source attachments for KakaoTalk response
+ */
+export function formatSourceAttachments(sources: Array<{
+  title: string;
+  attachments?: Array<{
+    fileName: string;
+    fileUrl: string;
+    fileType?: string;
+    isImage?: boolean;
+  }>;
+}>): string {
+  const allAttachments: Array<{
+    title: string;
+    fileName: string;
+    fileUrl: string;
+    isImage: boolean;
+  }> = [];
+
+  // Collect all attachments from sources
+  for (const source of sources) {
+    if (!source.attachments || source.attachments.length === 0) continue;
+
+    for (const att of source.attachments) {
+      if (!att.fileUrl) continue;
+
+      const isImage = att.isImage || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].some(
+        ext => att.fileName?.toLowerCase().endsWith(ext)
+      );
+
+      allAttachments.push({
+        title: source.title,
+        fileName: att.fileName || '첨부파일',
+        fileUrl: att.fileUrl,
+        isImage,
+      });
+    }
+  }
+
+  if (allAttachments.length === 0) {
+    return '';
+  }
+
+  // Group by source title
+  const byTitle = new Map<string, typeof allAttachments>();
+  for (const att of allAttachments) {
+    const existing = byTitle.get(att.title) || [];
+    existing.push(att);
+    byTitle.set(att.title, existing);
+  }
+
+  let attachmentText = '\n\n' + '─'.repeat(40) + '\n';
+  attachmentText += '📎 첨부파일 다운로드\n\n';
+
+  for (const [title, attachments] of byTitle) {
+    // Truncate title if too long
+    const shortTitle = title.length > 30 ? title.slice(0, 30) + '...' : title;
+    attachmentText += `[${shortTitle}]\n`;
+
+    for (const att of attachments) {
+      const icon = att.isImage ? '🖼️' : '📄';
+      attachmentText += `${icon} ${att.fileName}\n`;
+      attachmentText += `${att.fileUrl}\n\n`;
+    }
   }
 
   return attachmentText;
@@ -505,7 +574,16 @@ export async function ragAnswer(userQuery: string, topK: number = 10): Promise<s
 무엇을 도와드릴까요?`;
     }
 
-    // Build PDF attachment info from sources
+    // Format source attachments from HOF RAG results
+    const sourceAttachments = formatSourceAttachments(result.sources);
+    let finalAnswer = result.answer;
+
+    if (sourceAttachments) {
+      finalAnswer += sourceAttachments;
+      console.log(`[RAG] Attached source files from HOF notices`);
+    }
+
+    // Also check for relevant PDFs from static config
     const pdfResults: PineconeQueryResult = {
       matches: result.sources.map(s => ({
         id: s.postId,
@@ -514,15 +592,14 @@ export async function ragAnswer(userQuery: string, topK: number = 10): Promise<s
       })) as PineconeMatch[],
     };
 
-    // Attach relevant PDFs
     const relevantPdfs = getRelevantPdfs(userQuery, pdfResults);
     if (relevantPdfs.length > 0) {
       const pdfAttachments = formatPdfAttachments(relevantPdfs);
-      console.log(`[RAG] Attached ${relevantPdfs.length} PDFs\n`);
-      return result.answer + pdfAttachments;
+      console.log(`[RAG] Attached ${relevantPdfs.length} PDFs from config`);
+      finalAnswer += pdfAttachments;
     }
 
-    return result.answer;
+    return finalAnswer;
   } catch (error) {
     console.error('[RAG] Error:', error);
     return `죄송합니다. 답변을 생성하는 중 오류가 발생했습니다: ${error instanceof Error ? error.message : String(error)}`;
@@ -571,7 +648,16 @@ export async function ragAnswerWithRBAC(
 무엇을 도와드릴까요?`;
     }
 
-    // Build PDF attachment info from sources
+    // Format source attachments from HOF RAG results
+    const sourceAttachments = formatSourceAttachments(result.sources);
+    let finalAnswer = result.answer;
+
+    if (sourceAttachments) {
+      finalAnswer += sourceAttachments;
+      console.log(`[RAG-RBAC] Attached source files from HOF notices`);
+    }
+
+    // Also check for relevant PDFs from static config
     const pdfResults: PineconeQueryResult = {
       matches: result.sources.map(s => ({
         id: s.postId,
@@ -580,12 +666,10 @@ export async function ragAnswerWithRBAC(
       })) as PineconeMatch[],
     };
 
-    // Attach relevant PDFs
     const relevantPdfs = getRelevantPdfs(userQuery, pdfResults);
-    let finalAnswer = result.answer;
     if (relevantPdfs.length > 0) {
       finalAnswer += formatPdfAttachments(relevantPdfs);
-      console.log(`[RAG-RBAC] Attached ${relevantPdfs.length} PDFs`);
+      console.log(`[RAG-RBAC] Attached ${relevantPdfs.length} PDFs from config`);
     }
 
     // Log query
@@ -719,6 +803,7 @@ const ragService = {
   generateAnswerWithGemini,
   getRelevantPdfs,
   formatPdfAttachments,
+  formatSourceAttachments,
   PUBLIC_NAMESPACE,
 };
 

@@ -397,7 +397,7 @@ function buildContext(results: RAGSearchResult[]): string {
 }
 
 /**
- * Build attachment context section
+ * Build attachment context section (for Gemini context)
  */
 function buildAttachmentContext(results: RAGSearchResult[]): string {
   const attachmentParts: string[] = [];
@@ -413,12 +413,12 @@ function buildAttachmentContext(results: RAGSearchResult[]): string {
       );
 
       if (isImage) {
-        attachmentSection += `- 이미지: ${attachment.fileName}\n`;
+        attachmentSection += `이미지: ${attachment.fileName}\n`;
         if (attachment.description) {
           attachmentSection += `  설명: ${attachment.description}\n`;
         }
       } else {
-        attachmentSection += `- 문서: ${attachment.fileName}\n`;
+        attachmentSection += `문서: ${attachment.fileName}\n`;
         if (attachment.description) {
           attachmentSection += `  설명: ${attachment.description}\n`;
         }
@@ -430,7 +430,66 @@ function buildAttachmentContext(results: RAGSearchResult[]): string {
 
   if (attachmentParts.length === 0) return '';
 
-  return '\n\n--- 첨부파일 정보 ---\n' + attachmentParts.join('\n');
+  return '\n\n첨부파일 정보\n' + attachmentParts.join('\n');
+}
+
+/**
+ * Format attachments for final response (user-facing download links)
+ * Pure text formatting for KakaoTalk
+ */
+function formatAttachmentsForResponse(results: RAGSearchResult[]): string {
+  const allAttachments: Array<{
+    title: string;
+    fileName: string;
+    fileUrl: string;
+    isImage: boolean;
+  }> = [];
+
+  for (const result of results) {
+    if (!result.attachments || result.attachments.length === 0) continue;
+
+    for (const att of result.attachments) {
+      if (!att.fileUrl) continue;
+
+      const isImage = att.isImage || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].some(
+        ext => att.fileName?.toLowerCase().endsWith(ext)
+      );
+
+      allAttachments.push({
+        title: result.title,
+        fileName: att.fileName || '첨부파일',
+        fileUrl: att.fileUrl,
+        isImage,
+      });
+    }
+  }
+
+  if (allAttachments.length === 0) {
+    return '';
+  }
+
+  // Group by source title
+  const byTitle = new Map<string, typeof allAttachments>();
+  for (const att of allAttachments) {
+    const existing = byTitle.get(att.title) || [];
+    existing.push(att);
+    byTitle.set(att.title, existing);
+  }
+
+  let attachmentText = '\n\n────────────────────\n';
+  attachmentText += '첨부파일 다운로드\n\n';
+
+  for (const [title, attachments] of byTitle) {
+    const shortTitle = title.length > 35 ? title.slice(0, 35) + '...' : title;
+    attachmentText += `[${shortTitle}]\n`;
+
+    for (const att of attachments) {
+      attachmentText += `  ${att.fileName}\n`;
+      attachmentText += `  ${att.fileUrl}\n\n`;
+    }
+  }
+
+  return attachmentText;
 }
 
 /**
@@ -555,9 +614,16 @@ export async function ragQuery(
     // STEP 8: Gemini Inference
     console.log('[RAG] Step 8: Gemini Inference');
     const inferenceStart = Date.now();
-    const answer = await generateResponse(query, context);
+    let answer = await generateResponse(query, context);
     metrics.inferenceTimeMs = Date.now() - inferenceStart;
     console.log(`[RAG] Generated response in ${metrics.inferenceTimeMs}ms`);
+
+    // STEP 9: Append attachment download links
+    const attachmentLinks = formatAttachmentsForResponse(results);
+    if (attachmentLinks) {
+      answer += attachmentLinks;
+      console.log('[RAG] Appended attachment download links');
+    }
 
     const totalTime = Date.now() - startTime;
     console.log(`[RAG] Total pipeline time: ${totalTime}ms`);
