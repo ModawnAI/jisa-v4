@@ -574,32 +574,9 @@ export async function ragAnswer(userQuery: string, topK: number = 10): Promise<s
 무엇을 도와드릴까요?`;
     }
 
-    // Format source attachments from HOF RAG results
-    const sourceAttachments = formatSourceAttachments(result.sources);
-    let finalAnswer = result.answer;
-
-    if (sourceAttachments) {
-      finalAnswer += sourceAttachments;
-      console.log(`[RAG] Attached source files from HOF notices`);
-    }
-
-    // Also check for relevant PDFs from static config
-    const pdfResults: PineconeQueryResult = {
-      matches: result.sources.map(s => ({
-        id: s.postId,
-        score: s.score,
-        metadata: s.metadata as unknown as Record<string, unknown>,
-      })) as PineconeMatch[],
-    };
-
-    const relevantPdfs = getRelevantPdfs(userQuery, pdfResults);
-    if (relevantPdfs.length > 0) {
-      const pdfAttachments = formatPdfAttachments(relevantPdfs);
-      console.log(`[RAG] Attached ${relevantPdfs.length} PDFs from config`);
-      finalAnswer += pdfAttachments;
-    }
-
-    return finalAnswer;
+    // Attachments are already included by the HOF RAG pipeline in inference.ts
+    // Just return the answer directly
+    return result.answer;
   } catch (error) {
     console.error('[RAG] Error:', error);
     return `죄송합니다. 답변을 생성하는 중 오류가 발생했습니다: ${error instanceof Error ? error.message : String(error)}`;
@@ -648,36 +625,13 @@ export async function ragAnswerWithRBAC(
 무엇을 도와드릴까요?`;
     }
 
-    // Format source attachments from HOF RAG results
-    const sourceAttachments = formatSourceAttachments(result.sources);
-    let finalAnswer = result.answer;
-
-    if (sourceAttachments) {
-      finalAnswer += sourceAttachments;
-      console.log(`[RAG-RBAC] Attached source files from HOF notices`);
-    }
-
-    // Also check for relevant PDFs from static config
-    const pdfResults: PineconeQueryResult = {
-      matches: result.sources.map(s => ({
-        id: s.postId,
-        score: s.score,
-        metadata: s.metadata as unknown as Record<string, unknown>,
-      })) as PineconeMatch[],
-    };
-
-    const relevantPdfs = getRelevantPdfs(userQuery, pdfResults);
-    if (relevantPdfs.length > 0) {
-      finalAnswer += formatPdfAttachments(relevantPdfs);
-      console.log(`[RAG-RBAC] Attached ${relevantPdfs.length} PDFs from config`);
-    }
-
+    // Attachments are already included by the HOF RAG pipeline in inference.ts
     // Log query
     if (userId) {
-      await logRAGQuery(userId, userQuery, finalAnswer, result.sources.length);
+      await logRAGQuery(userId, userQuery, result.answer, result.sources.length);
     }
 
-    return finalAnswer;
+    return result.answer;
   } catch (error) {
     console.error('[RAG-RBAC] Error:', error);
     return '죄송합니다. 답변 생성 중 오류가 발생했습니다.';

@@ -436,7 +436,7 @@ function buildAttachmentContext(results: RAGSearchResult[]): string {
 /**
  * Format attachments for final response (user-facing download links)
  * Pure text formatting for KakaoTalk
- * Only includes top 2 most relevant attachments from the first source with attachments
+ * Only includes the single most relevant attachment from the first source
  */
 function formatAttachmentsForResponse(results: RAGSearchResult[]): string {
   // Find the first (most relevant) source that has attachments
@@ -448,27 +448,17 @@ function formatAttachmentsForResponse(results: RAGSearchResult[]): string {
     return '';
   }
 
-  // Get top 2 attachments from the most relevant source
-  const topAttachments = sourceWithAttachments.attachments
-    .filter(att => att.fileUrl)
-    .slice(0, 2);
+  // Get the first attachment with a valid URL
+  const topAttachment = sourceWithAttachments.attachments.find(att => att.fileUrl);
 
-  if (topAttachments.length === 0) {
+  if (!topAttachment) {
     return '';
   }
 
-  const shortTitle = sourceWithAttachments.title.length > 35
-    ? sourceWithAttachments.title.slice(0, 35) + '...'
-    : sourceWithAttachments.title;
-
   let attachmentText = '\n\n────────────────────\n';
   attachmentText += '첨부파일 다운로드\n\n';
-  attachmentText += `[${shortTitle}]\n`;
-
-  for (const att of topAttachments) {
-    attachmentText += `  ${att.fileName || '첨부파일'}\n`;
-    attachmentText += `  ${att.fileUrl}\n\n`;
-  }
+  attachmentText += `${topAttachment.fileName || '첨부파일'}\n`;
+  attachmentText += `${topAttachment.fileUrl}\n`;
 
   return attachmentText;
 }
