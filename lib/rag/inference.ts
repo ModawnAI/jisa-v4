@@ -390,10 +390,8 @@ function buildContext(results: RAGSearchResult[]): string {
     contextParts.push(contextItem);
   }
 
-  // Build attachment context
-  const attachmentContext = buildAttachmentContext(results);
-
-  return contextParts.join('\n') + attachmentContext;
+  // Attachments disabled - no longer include attachment context
+  return contextParts.join('\n');
 }
 
 /**
@@ -515,8 +513,7 @@ ${context}
 사용자 질문: ${query}
 
 위 공지사항 내용을 바탕으로 질문에 답변해주세요.
-답변에 사용한 공지사항의 제목을 인용해주세요.
-첨부파일이 있는 경우 해당 정보도 포함해주세요.`;
+답변에 사용한 공지사항의 제목을 인용해주세요.`;
 
   try {
     const response = await gemini.models.generateContent({
@@ -620,17 +617,8 @@ export async function ragQuery(
     metrics.inferenceTimeMs = Date.now() - inferenceStart;
     console.log(`[RAG] Generated response in ${metrics.inferenceTimeMs}ms`);
 
-    // STEP 9: Append attachment download links
-    const attachmentLinks = formatAttachmentsForResponse(results);
-    const hasAttachments = attachmentLinks.length > 0;
-
-    // Clean up any hallucinated file references if no actual attachments
-    answer = cleanupFileReferences(answer, hasAttachments);
-
-    if (hasAttachments) {
-      answer += attachmentLinks;
-      console.log('[RAG] Appended attachment download links');
-    }
+    // Clean up any file references from the response (attachments disabled)
+    answer = cleanupFileReferences(answer, false);
 
     const totalTime = Date.now() - startTime;
     console.log(`[RAG] Total pipeline time: ${totalTime}ms`);
