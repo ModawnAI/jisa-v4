@@ -434,6 +434,37 @@ function buildAttachmentContext(results: RAGSearchResult[]): string {
 }
 
 /**
+ * Clean up file download mentions from response when no attachments exist
+ * Safety net to remove any hallucinated file references
+ */
+function cleanupFileReferences(text: string, hasAttachments: boolean): string {
+  if (hasAttachments) {
+    return text; // Keep original if there are actual attachments
+  }
+
+  // Regex patterns to remove file download mentions
+  const patterns = [
+    /첨부\s*파일\s*다운로드[^\n]*/gi,
+    /첨부파일\s*다운로드[^\n]*/gi,
+    /파일\s*다운로드[^\n]*/gi,
+    /첨부\s*파일을?\s*확인[^\n]*/gi,
+    /첨부파일을?\s*확인[^\n]*/gi,
+    /자세한\s*내용은\s*첨부\s*파일[^\n]*/gi,
+    /자세한\s*내용은\s*첨부파일[^\n]*/gi,
+  ];
+
+  let cleaned = text;
+  for (const pattern of patterns) {
+    cleaned = cleaned.replace(pattern, '');
+  }
+
+  // Clean up multiple consecutive newlines left after removal
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
+
+  return cleaned.trim();
+}
+
+/**
  * Format attachments for final response (user-facing download links)
  * Pure text formatting for KakaoTalk
  * Only includes the single most relevant attachment from the first source
@@ -591,7 +622,12 @@ export async function ragQuery(
 
     // STEP 9: Append attachment download links
     const attachmentLinks = formatAttachmentsForResponse(results);
-    if (attachmentLinks) {
+    const hasAttachments = attachmentLinks.length > 0;
+
+    // Clean up any hallucinated file references if no actual attachments
+    answer = cleanupFileReferences(answer, hasAttachments);
+
+    if (hasAttachments) {
       answer += attachmentLinks;
       console.log('[RAG] Appended attachment download links');
     }
